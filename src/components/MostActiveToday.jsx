@@ -78,10 +78,10 @@ export default function MostActiveToday() {
         </h2>
         <div className="flex items-center gap-3">
           {!isLoading && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className={`flex items-center gap-1 text-xs ${isMock ? 'text-amber-500' : 'text-green-500'}`}>
               {isMock
-                ? <><WifiOff className="h-3 w-3" /> Demo data</>
-                : <><Wifi className="h-3 w-3 text-green-500" /> Live</>
+                ? <><WifiOff className="h-3 w-3" /> Demo · add VITE_FINNHUB_KEY for live data</>
+                : <><Wifi className="h-3 w-3" /> Live via Finnhub · updates every 2 min</>
               }
             </span>
           )}

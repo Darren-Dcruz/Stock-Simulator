@@ -1,46 +1,53 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchStockQuotes, TRACKED_STOCKS } from '@/api/stockService';
+import { fetchStockQuotes, hasFinnhubKey, TRACKED_STOCKS } from '@/api/stockService';
 
-// Realistic fallback data used when API is unavailable
+// Realistic fallback prices shown when no Finnhub API key is configured
 const MOCK_PRICES = {
-  'RELIANCE.NS':  { price: 1390.45, change:  0.38 },
-  'SBIN.NS':      { price:  500.80, change:  0.07 },
-  'KOTAKBANK.NS': { price: 2221.30, change:  1.42 },
-  'AXISBANK.NS':  { price: 1280.80, change:  1.10 },
-  'POWERGRID.NS': { price:  286.25, change: -0.15 },
-  'TATASTEEL.NS': { price:  169.90, change: -0.70 },
-  'TCS.NS':       { price: 3580.00, change:  0.55 },
-  'HDFCBANK.NS':  { price: 1724.60, change:  0.29 },
-  'INFY.NS':      { price: 1543.20, change: -0.18 },
-  'WIPRO.NS':     { price:  462.75, change:  0.62 },
+  'NSE:RELIANCE':  { price: 1390.45, change:  0.38 },
+  'NSE:SBIN':      { price:  500.80, change:  0.07 },
+  'NSE:KOTAKBANK': { price: 2221.30, change:  1.42 },
+  'NSE:AXISBANK':  { price: 1280.80, change:  1.10 },
+  'NSE:POWERGRID': { price:  286.25, change: -0.15 },
+  'NSE:TATASTEEL': { price:  169.90, change: -0.70 },
+  'NSE:TCS':       { price: 3580.00, change:  0.55 },
+  'NSE:HDFCBANK':  { price: 1724.60, change:  0.29 },
+  'NSE:INFY':      { price: 1543.20, change: -0.18 },
+  'NSE:WIPRO':     { price:  462.75, change:  0.62 },
 };
 
 function getMockData() {
   return TRACKED_STOCKS.map(stock => ({
     ...stock,
     ...(MOCK_PRICES[stock.symbol] ?? { price: 500, change: 0 }),
-    changeAmount: 0,
-    volume: Math.floor(Math.random() * 5_000_000 + 500_000),
-    high: 0,
-    low: 0,
-    open: 0,
-    isMock: true,
+    changeAmount:  0,
+    volume:        0,
+    high:          0,
+    low:           0,
+    open:          0,
+    previousClose: 0,
+    isMock:        true,
   }));
 }
 
+/**
+ * React Query hook for stock data.
+ * - Fetches live data from Finnhub when VITE_FINNHUB_KEY is set
+ * - Falls back to static demo prices otherwise
+ * - Auto-refreshes every 2 minutes
+ */
 export function useStockData() {
   return useQuery({
     queryKey: ['stocks'],
     queryFn: async () => {
+      if (!hasFinnhubKey()) return getMockData();
       try {
-        const data = await fetchStockQuotes();
-        return data.length > 0 ? data : getMockData();
+        return await fetchStockQuotes();
       } catch {
         return getMockData();
       }
     },
-    refetchInterval: 60_000,   // live refresh every 60 s
-    staleTime: 30_000,
-    retry: 1,
+    refetchInterval: 2 * 60 * 1000,   // 2 minutes
+    staleTime:       60 * 1000,        // consider fresh for 1 minute
+    retry:           1,
   });
 }
