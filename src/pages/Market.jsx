@@ -98,6 +98,9 @@ export default function Market() {
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => addWatch(stock)} title="Add to watchlist">
                             <BookmarkPlus className="h-4 w-4" />
                           </Button>
+                          <Button size="sm" variant="outline" className="h-7" onClick={() => navigate(`/stock/${stock.ticker}`)}>
+                            Details
+                          </Button>
                           <Button size="sm" className="h-7 bg-orange-500 hover:bg-orange-600 text-white gap-1" onClick={() => navigate(`/trade/${stock.ticker}`)}>
                             Trade <ArrowRight className="h-3 w-3" />
                           </Button>

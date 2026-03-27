@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStockData } from '@/hooks/useStockData';
+import { useNavigate } from 'react-router-dom';
 
 const SECTOR_STYLES = {
   Banking:   'bg-blue-500/15 text-blue-500',
@@ -10,7 +11,7 @@ const SECTOR_STYLES = {
   default:   'bg-gray-500/15 text-gray-400',
 };
 
-function StockCard({ stock }) {
+function StockCard({ stock, onClick }) {
   const isUp = stock.change >= 0;
   const sectorCls = SECTOR_STYLES[stock.sector] ?? SECTOR_STYLES.default;
   const formattedPrice = Number(stock.price).toLocaleString('en-IN', {
@@ -19,7 +20,7 @@ function StockCard({ stock }) {
   });
 
   return (
-    <div className="flex-shrink-0 w-52 rounded-xl border bg-card hover:shadow-lg hover:border-primary/30 transition-all duration-200 cursor-pointer">
+    <div onClick={onClick} className="flex-shrink-0 w-52 rounded-xl border bg-card hover:shadow-lg hover:border-orange-500/40 transition-all duration-200 cursor-pointer">
       {/* card header: icon + name */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0 ${sectorCls}`}>
@@ -68,6 +69,7 @@ function CardSkeleton() {
 
 export default function MostActiveToday() {
   const { data: stocks, isLoading, isFetching, refetch } = useStockData();
+  const navigate = useNavigate();
   const isMock = stocks?.[0]?.isMock;
 
   return (
@@ -99,7 +101,7 @@ export default function MostActiveToday() {
       <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
         {isLoading
           ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
-          : stocks?.map(stock => <StockCard key={stock.symbol} stock={stock} />)
+          : stocks?.map(stock => <StockCard key={stock.symbol} stock={stock} onClick={() => navigate(`/stock/${stock.ticker}`)} />)
         }
       </div>
     </section>

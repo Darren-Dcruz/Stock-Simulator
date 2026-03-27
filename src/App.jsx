@@ -13,6 +13,7 @@ import Trade from '@/pages/Trade'
 import History from '@/pages/History'
 import Watchlist from '@/pages/Watchlist'
 import Leaderboard from '@/pages/Leaderboard'
+import StockDetail from '@/pages/StockDetail'
 
 function Spinner() {
   return (
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="history" element={<History />} />
         <Route path="watchlist" element={<Watchlist />} />
         <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="stock/:symbol" element={<StockDetail />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
