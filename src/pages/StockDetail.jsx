@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, TrendingUp, TrendingDown, BookmarkPlus, ArrowLeftRight, Globe, Building2 } from 'lucide-react'
+import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 
 const RANGES = [
@@ -117,7 +118,7 @@ export default function StockDetail() {
           <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="text-4xl">{meta?.icon ?? '📈'}</span>
+          <AssetLogo logo={meta?.logo} icon={meta?.icon ?? '📈'} name={meta?.name ?? symbol} className="w-14 h-14 text-3xl" />
           <div>
             <h1 className="text-2xl font-bold">{symbol}</h1>
             <p className="text-muted-foreground text-sm">{meta?.name ?? profile?.name ?? symbol}</p>

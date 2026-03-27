@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TrendingUp, TrendingDown, BookmarkPlus, ArrowRight } from 'lucide-react'
+import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 import { US_INDICES, getMarketStatus } from '@/api/stockService'
 import { useStockData, useETFData, useCryptoData, useForexData, useCommodityData } from '@/hooks/useStockData'
@@ -93,7 +94,7 @@ function AssetTable({ assets, isLoading, assetType, onWatch, onTrade, onDetails,
                   <tr key={asset.symbol} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-base">{asset.icon}</span>
+                        <AssetLogo logo={asset.logo} icon={asset.icon} name={asset.name} className="w-8 h-8 text-sm" />
                         <div>
                           <p className="font-semibold">{asset.ticker}</p>
                           <p className="text-xs text-muted-foreground">{asset.name}</p>

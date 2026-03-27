@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
+import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 
 function fmtPrice(price, assetType) {
@@ -139,7 +140,7 @@ export default function Trade() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{stock.icon}</span>
+                  <AssetLogo logo={stock.logo} icon={stock.icon} name={stock.name} className="w-12 h-12 text-2xl" />
                   <div>
                     <p className="font-bold text-lg">{stock.ticker}</p>
                     <p className="text-sm text-muted-foreground">{stock.name}</p>

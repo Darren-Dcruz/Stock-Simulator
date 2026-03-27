@@ -2,19 +2,10 @@ import { TrendingUp, TrendingDown, RefreshCw, Wifi, WifiOff } from 'lucide-react
 import { Skeleton } from '@/components/ui/skeleton';
 import { useStockData } from '@/hooks/useStockData';
 import { useNavigate } from 'react-router-dom';
-
-const SECTOR_STYLES = {
-  Technology: 'bg-purple-500/15 text-purple-500',
-  Finance:    'bg-blue-500/15 text-blue-500',
-  Consumer:   'bg-orange-500/15 text-orange-500',
-  Automotive: 'bg-red-500/15 text-red-500',
-  Healthcare: 'bg-green-500/15 text-green-500',
-  default:    'bg-gray-500/15 text-gray-400',
-};
+import AssetLogo from '@/components/AssetLogo';
 
 function StockCard({ stock, onClick }) {
   const isUp = stock.change >= 0;
-  const sectorCls = SECTOR_STYLES[stock.sector] ?? SECTOR_STYLES.default;
   const formattedPrice = Number(stock.price).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -24,9 +15,7 @@ function StockCard({ stock, onClick }) {
     <div onClick={onClick} className="flex-shrink-0 w-52 rounded-xl border bg-card hover:shadow-lg hover:border-orange-500/40 transition-all duration-200 cursor-pointer">
       {/* card header: icon + name */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0 ${sectorCls}`}>
-          {stock.icon}
-        </div>
+        <AssetLogo logo={stock.logo} icon={stock.icon} name={stock.name} className="w-9 h-9 text-base" />
         <div className="min-w-0">
           <p className="font-bold text-sm leading-tight truncate">{stock.ticker}</p>
           <p className="text-xs text-muted-foreground leading-tight truncate">{stock.name}</p>

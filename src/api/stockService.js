@@ -3,36 +3,36 @@ const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 
 // ─── Stocks ─────────────────────────────────────────────────────────────────
 export const TRACKED_STOCKS = [
-  { symbol: 'AAPL',  ticker: 'AAPL',  name: 'Apple Inc.',            icon: '🍎', sector: 'Technology', assetType: 'stock' },
-  { symbol: 'MSFT',  ticker: 'MSFT',  name: 'Microsoft Corp.',       icon: '💻', sector: 'Technology', assetType: 'stock' },
-  { symbol: 'GOOGL', ticker: 'GOOGL', name: 'Alphabet Inc.',         icon: '🔍', sector: 'Technology', assetType: 'stock' },
-  { symbol: 'AMZN',  ticker: 'AMZN',  name: 'Amazon.com Inc.',       icon: '📦', sector: 'Consumer',   assetType: 'stock' },
-  { symbol: 'TSLA',  ticker: 'TSLA',  name: 'Tesla Inc.',            icon: '🚗', sector: 'Automotive', assetType: 'stock' },
-  { symbol: 'META',  ticker: 'META',  name: 'Meta Platforms Inc.',   icon: '👤', sector: 'Technology', assetType: 'stock' },
-  { symbol: 'NVDA',  ticker: 'NVDA',  name: 'NVIDIA Corp.',          icon: '🎮', sector: 'Technology', assetType: 'stock' },
-  { symbol: 'JPM',   ticker: 'JPM',   name: 'JPMorgan Chase & Co.', icon: '🏦', sector: 'Finance',    assetType: 'stock' },
-  { symbol: 'JNJ',   ticker: 'JNJ',   name: 'Johnson & Johnson',     icon: '💊', sector: 'Healthcare', assetType: 'stock' },
-  { symbol: 'V',     ticker: 'V',     name: 'Visa Inc.',             icon: '💳', sector: 'Finance',    assetType: 'stock' },
+  { symbol: 'AAPL',  ticker: 'AAPL',  name: 'Apple Inc.',            icon: '🍎', logo: 'https://logo.clearbit.com/apple.com',       sector: 'Technology', assetType: 'stock' },
+  { symbol: 'MSFT',  ticker: 'MSFT',  name: 'Microsoft Corp.',       icon: '💻', logo: 'https://logo.clearbit.com/microsoft.com',   sector: 'Technology', assetType: 'stock' },
+  { symbol: 'GOOGL', ticker: 'GOOGL', name: 'Alphabet Inc.',         icon: '🔍', logo: 'https://logo.clearbit.com/google.com',      sector: 'Technology', assetType: 'stock' },
+  { symbol: 'AMZN',  ticker: 'AMZN',  name: 'Amazon.com Inc.',       icon: '📦', logo: 'https://logo.clearbit.com/amazon.com',      sector: 'Consumer',   assetType: 'stock' },
+  { symbol: 'TSLA',  ticker: 'TSLA',  name: 'Tesla Inc.',            icon: '🚗', logo: 'https://logo.clearbit.com/tesla.com',       sector: 'Automotive', assetType: 'stock' },
+  { symbol: 'META',  ticker: 'META',  name: 'Meta Platforms Inc.',   icon: '👤', logo: 'https://logo.clearbit.com/meta.com',        sector: 'Technology', assetType: 'stock' },
+  { symbol: 'NVDA',  ticker: 'NVDA',  name: 'NVIDIA Corp.',          icon: '🎮', logo: 'https://logo.clearbit.com/nvidia.com',      sector: 'Technology', assetType: 'stock' },
+  { symbol: 'JPM',   ticker: 'JPM',   name: 'JPMorgan Chase & Co.', icon: '🏦', logo: 'https://logo.clearbit.com/jpmorgan.com',    sector: 'Finance',    assetType: 'stock' },
+  { symbol: 'JNJ',   ticker: 'JNJ',   name: 'Johnson & Johnson',     icon: '💊', logo: 'https://logo.clearbit.com/jnj.com',         sector: 'Healthcare', assetType: 'stock' },
+  { symbol: 'V',     ticker: 'V',     name: 'Visa Inc.',             icon: '💳', logo: 'https://logo.clearbit.com/visa.com',        sector: 'Finance',    assetType: 'stock' },
 ];
 
 // ─── ETFs ────────────────────────────────────────────────────────────────────
 export const TRACKED_ETFS = [
-  { symbol: 'SPY',  ticker: 'SPY',  name: 'SPDR S&P 500 ETF Trust',          icon: '📊', sector: 'Broad Market', assetType: 'etf' },
-  { symbol: 'QQQ',  ticker: 'QQQ',  name: 'Invesco QQQ Trust (NASDAQ-100)',   icon: '📊', sector: 'Technology',   assetType: 'etf' },
-  { symbol: 'TLT',  ticker: 'TLT',  name: 'iShares 20+ Year Treasury ETF',   icon: '📊', sector: 'Bonds',        assetType: 'etf' },
-  { symbol: 'VTI',  ticker: 'VTI',  name: 'Vanguard Total Stock Market ETF',  icon: '📊', sector: 'Broad Market', assetType: 'etf' },
-  { symbol: 'IVV',  ticker: 'IVV',  name: 'iShares Core S&P 500 ETF',        icon: '📊', sector: 'Broad Market', assetType: 'etf' },
-  { symbol: 'AGG',  ticker: 'AGG',  name: 'iShares Core US Aggregate Bond ETF',icon: '📊', sector: 'Bonds',      assetType: 'etf' },
+  { symbol: 'SPY',  ticker: 'SPY',  name: 'SPDR S&P 500 ETF Trust',          icon: '📊', logo: 'https://logo.clearbit.com/ssga.com',      sector: 'Broad Market', assetType: 'etf' },
+  { symbol: 'QQQ',  ticker: 'QQQ',  name: 'Invesco QQQ Trust (NASDAQ-100)',   icon: '📊', logo: 'https://logo.clearbit.com/invesco.com',   sector: 'Technology',   assetType: 'etf' },
+  { symbol: 'TLT',  ticker: 'TLT',  name: 'iShares 20+ Year Treasury ETF',   icon: '📊', logo: 'https://logo.clearbit.com/blackrock.com', sector: 'Bonds',        assetType: 'etf' },
+  { symbol: 'VTI',  ticker: 'VTI',  name: 'Vanguard Total Stock Market ETF',  icon: '📊', logo: 'https://logo.clearbit.com/vanguard.com', sector: 'Broad Market', assetType: 'etf' },
+  { symbol: 'IVV',  ticker: 'IVV',  name: 'iShares Core S&P 500 ETF',        icon: '📊', logo: 'https://logo.clearbit.com/blackrock.com', sector: 'Broad Market', assetType: 'etf' },
+  { symbol: 'AGG',  ticker: 'AGG',  name: 'iShares Core US Aggregate Bond ETF',icon: '📊', logo: 'https://logo.clearbit.com/blackrock.com',sector: 'Bonds',       assetType: 'etf' },
 ];
 
 // ─── Crypto ──────────────────────────────────────────────────────────────────
 export const TRACKED_CRYPTO = [
-  { symbol: 'BINANCE:BTCUSDT', ticker: 'BTC', name: 'Bitcoin',   icon: '₿',  sector: 'Crypto', assetType: 'crypto' },
-  { symbol: 'BINANCE:ETHUSDT', ticker: 'ETH', name: 'Ethereum',  icon: '⟠',  sector: 'Crypto', assetType: 'crypto' },
-  { symbol: 'BINANCE:BNBUSDT', ticker: 'BNB', name: 'BNB',       icon: '🔶', sector: 'Crypto', assetType: 'crypto' },
-  { symbol: 'BINANCE:SOLUSDT', ticker: 'SOL', name: 'Solana',    icon: '◎',  sector: 'Crypto', assetType: 'crypto' },
-  { symbol: 'BINANCE:XRPUSDT', ticker: 'XRP', name: 'Ripple',    icon: '💧', sector: 'Crypto', assetType: 'crypto' },
-  { symbol: 'BINANCE:ADAUSDT', ticker: 'ADA', name: 'Cardano',   icon: '🔷', sector: 'Crypto', assetType: 'crypto' },
+  { symbol: 'BINANCE:BTCUSDT', ticker: 'BTC', name: 'Bitcoin',   icon: '₿',  logo: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',         sector: 'Crypto', assetType: 'crypto' },
+  { symbol: 'BINANCE:ETHUSDT', ticker: 'ETH', name: 'Ethereum',  icon: '⟠',  logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',       sector: 'Crypto', assetType: 'crypto' },
+  { symbol: 'BINANCE:BNBUSDT', ticker: 'BNB', name: 'BNB',       icon: '🔶', logo: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',   sector: 'Crypto', assetType: 'crypto' },
+  { symbol: 'BINANCE:SOLUSDT', ticker: 'SOL', name: 'Solana',    icon: '◎',  logo: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',         sector: 'Crypto', assetType: 'crypto' },
+  { symbol: 'BINANCE:XRPUSDT', ticker: 'XRP', name: 'Ripple',    icon: '💧', logo: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png', sector: 'Crypto', assetType: 'crypto' },
+  { symbol: 'BINANCE:ADAUSDT', ticker: 'ADA', name: 'Cardano',   icon: '🔷', logo: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',         sector: 'Crypto', assetType: 'crypto' },
 ];
 
 // ─── Forex ───────────────────────────────────────────────────────────────────
