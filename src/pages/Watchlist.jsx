@@ -9,7 +9,7 @@ import { TrendingUp, TrendingDown, Trash2, ArrowRight } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function Watchlist() {
@@ -69,7 +69,7 @@ export default function Watchlist() {
                 <div className="flex items-center gap-4">
                   {stock ? (
                     <div className="text-right">
-                      <p className="font-medium text-sm">₹{fmt(stock.price)}</p>
+                      <p className="font-medium text-sm">${fmt(stock.price)}</p>
                       <span className={`text-xs font-semibold flex items-center gap-0.5 justify-end ${up?'text-green-500':'text-red-500'}`}>
                         {up?<TrendingUp className="h-3 w-3"/>:<TrendingDown className="h-3 w-3"/>}
                         {up?'+':''}{Number(stock.change).toFixed(2)}%

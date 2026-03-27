@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Trophy, Medal } from 'lucide-react'
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+  return Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
 const MEDALS = { 0: '🥇', 1: '🥈', 2: '🥉' }
@@ -58,9 +58,9 @@ export default function Leaderboard() {
                         <span className="font-medium">{row.username ?? 'Anonymous'}</span>
                         {isMe && <span className="ml-2 text-xs bg-orange-500 text-white px-1.5 py-0.5 rounded-full">you</span>}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold">₹{fmt(row.virtual_balance)}</td>
+                      <td className="px-4 py-3 text-right font-semibold">${fmt(row.virtual_balance)}</td>
                       <td className={`px-4 py-3 text-right text-sm font-medium ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {diff >= 0 ? '+' : ''}₹{fmt(Math.abs(diff))}
+                        {diff >= 0 ? '+' : ''}${fmt(Math.abs(diff))}
                       </td>
                     </tr>
                   )

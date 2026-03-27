@@ -8,9 +8,36 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TrendingUp, TrendingDown, Search, BookmarkPlus, ArrowRight } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { US_INDICES } from '@/api/stockService'
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function fmtIndex(n) {
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function IndicesBar() {
+  return (
+    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+      {US_INDICES.map(idx => {
+        const up = idx.mockChange >= 0
+        return (
+          <div key={idx.symbol} className="flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl border bg-card">
+            <div>
+              <p className="text-xs text-muted-foreground">{idx.label}</p>
+              <p className="font-bold text-sm">{fmtIndex(idx.mockPrice)}</p>
+            </div>
+            <span className={`text-xs font-semibold flex items-center gap-0.5 ${up ? 'text-green-500' : 'text-red-500'}`}>
+              {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {up ? '+' : ''}{idx.mockChange.toFixed(2)}%
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function Market() {
@@ -41,11 +68,17 @@ export default function Market() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">Market</h1>
-          <p className="text-sm text-muted-foreground">NSE live prices · updates every 2 min</p>
+          <p className="text-sm text-muted-foreground">NYSE / NASDAQ live prices · updates every 2 min</p>
         </div>
         <button onClick={() => refetch()} disabled={isFetching} className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40">
           {isFetching ? 'Refreshing…' : 'Refresh'}
         </button>
+      </div>
+
+      {/* US Market Indices */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">US Market Indices</p>
+        <IndicesBar />
       </div>
 
       <div className="relative max-w-sm">
@@ -57,7 +90,7 @@ export default function Market() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/40">
-              {['Stock', 'Price (₹)', 'Change', 'High', 'Low', ''].map(h => (
+              {['Stock', 'Price ($)', 'Change', 'High', 'Low', ''].map(h => (
                 <th key={h} className={`px-4 py-3 text-xs font-medium text-muted-foreground ${h === 'Stock' ? 'text-left' : 'text-right'} ${['High','Low'].includes(h) ? 'hidden md:table-cell' : ''}`}>{h}</th>
               ))}
             </tr>
@@ -84,15 +117,15 @@ export default function Market() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right font-medium">₹{fmt(stock.price)}</td>
+                      <td className="px-4 py-3 text-right font-medium">${fmt(stock.price)}</td>
                       <td className="px-4 py-3 text-right">
                         <span className={`inline-flex items-center gap-1 font-semibold ${up ? 'text-green-500' : 'text-red-500'}`}>
                           {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                           {up ? '+' : ''}{Number(stock.change).toFixed(2)}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-muted-foreground hidden md:table-cell">₹{fmt(stock.high)}</td>
-                      <td className="px-4 py-3 text-right text-muted-foreground hidden md:table-cell">₹{fmt(stock.low)}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground hidden md:table-cell">${fmt(stock.high)}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground hidden md:table-cell">${fmt(stock.low)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2 justify-end">
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => addWatch(stock)} title="Add to watchlist">

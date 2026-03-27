@@ -12,7 +12,7 @@ import { PieChart as RePie, Pie, Cell, Tooltip, ResponsiveContainer } from 'rech
 const COLORS = ['#f97316','#3b82f6','#22c55e','#a855f7','#ef4444','#eab308','#06b6d4','#ec4899']
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function Portfolio() {
@@ -58,11 +58,11 @@ export default function Portfolio() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Value',     value: `₹${fmt(totalValue)}`,                      icon: Wallet,      color: 'text-orange-500' },
-          { label: 'Cash Balance',    value: `₹${fmt(profile?.virtual_balance ?? 0)}`,    icon: Wallet,      color: 'text-blue-500'   },
-          { label: 'Holdings Value',  value: `₹${fmt(holdingsValue)}`,                   icon: PieChart,    color: 'text-purple-500' },
+          { label: 'Total Value',     value: `$${fmt(totalValue)}`,                      icon: Wallet,      color: 'text-orange-500' },
+          { label: 'Cash Balance',    value: `$${fmt(profile?.virtual_balance ?? 0)}`,    icon: Wallet,      color: 'text-blue-500'   },
+          { label: 'Holdings Value',  value: `$${fmt(holdingsValue)}`,                   icon: PieChart,    color: 'text-purple-500' },
           { label: 'Total P&L',
-            value: `${totalPnl >= 0 ? '+' : ''}₹${fmt(Math.abs(totalPnl))}`,
+            value: `${totalPnl >= 0 ? '+' : ''}$${fmt(Math.abs(totalPnl))}`,
             sub: `${totalPnlPct >= 0 ? '+' : ''}${totalPnlPct.toFixed(2)}%`,
             icon: totalPnl >= 0 ? TrendingUp : TrendingDown,
             color: totalPnl >= 0 ? 'text-green-500' : 'text-red-500'
@@ -108,8 +108,8 @@ export default function Portfolio() {
                       <tr key={h.id} className="hover:bg-muted/30 cursor-pointer" onClick={()=>navigate(`/trade/${h.symbol}`)}>
                         <td className="px-4 py-3 font-semibold">{h.symbol}</td>
                         <td className="px-4 py-3 text-right">{h.quantity}</td>
-                        <td className="px-4 py-3 text-right text-muted-foreground">₹{fmt(h.avg_buy_price)}</td>
-                        <td className="px-4 py-3 text-right">₹{fmt(h.currentPrice)}</td>
+                        <td className="px-4 py-3 text-right text-muted-foreground">${fmt(h.avg_buy_price)}</td>
+                        <td className="px-4 py-3 text-right">${fmt(h.currentPrice)}</td>
                         <td className="px-4 py-3 text-right">
                           <span className={h.pnl>=0?'text-green-500':'text-red-500'}>
                             {h.pnl>=0?'+':''}{h.pnlPct.toFixed(2)}%
@@ -138,7 +138,7 @@ export default function Portfolio() {
                       <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                         {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                       </Pie>
-                      <Tooltip formatter={v => `₹${fmt(v)}`} />
+                      <Tooltip formatter={v => `$${fmt(v)}`} />
                     </RePie>
                   </ResponsiveContainer>
                   <div className="space-y-1.5 mt-2">

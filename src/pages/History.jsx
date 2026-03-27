@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function History() {
@@ -57,7 +57,7 @@ export default function History() {
               : filtered.map(t => (
                   <tr key={t.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                      {new Date(t.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}
+                      {new Date(t.created_at).toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' })}
                     </td>
                     <td className="px-4 py-3 font-semibold">{t.symbol}</td>
                     <td className="px-4 py-3">
@@ -66,9 +66,9 @@ export default function History() {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right">{t.quantity}</td>
-                    <td className="px-4 py-3 text-right">₹{fmt(t.price)}</td>
+                    <td className="px-4 py-3 text-right">${fmt(t.price)}</td>
                     <td className={`px-4 py-3 text-right font-semibold ${t.type==='BUY'?'text-red-500':'text-green-500'}`}>
-                      {t.type==='BUY'?'-':'+'}₹{fmt(t.total)}
+                      {t.type==='BUY'?'-':'+'}${fmt(t.total)}
                     </td>
                   </tr>
                 ))

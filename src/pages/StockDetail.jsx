@@ -33,7 +33,7 @@ function calcTrend(candles) {
 }
 
 function fmt(n, decimals = 2) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 }
 
 function StatCard({ label, value, sub }) {
@@ -139,10 +139,10 @@ export default function StockDetail() {
         <div className="space-y-2"><Skeleton className="h-12 w-52" /><Skeleton className="h-6 w-40" /></div>
       ) : quote ? (
         <div>
-          <p className="text-5xl font-bold tracking-tight">₹{fmt(quote.price)}</p>
+          <p className="text-5xl font-bold tracking-tight">${fmt(quote.price)}</p>
           <span className={`inline-flex items-center gap-1.5 text-base font-semibold mt-2 px-3 py-1 rounded-full ${isUp ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
             {isUp ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            {isUp ? '+' : ''}₹{fmt(Math.abs(quote.changeAmount))}  ({isUp ? '+' : ''}{Number(quote.change).toFixed(2)}%)  today
+            {isUp ? '+' : ''}${fmt(Math.abs(quote.changeAmount))}  ({isUp ? '+' : ''}{Number(quote.change).toFixed(2)}%)  today
           </span>
         </div>
       ) : (
@@ -182,11 +182,11 @@ export default function StockDetail() {
                 <YAxis
                   domain={[minVal, maxVal]}
                   tick={{ fontSize: 11 }} tickLine={false} axisLine={false}
-                  tickFormatter={v => `₹${Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                  tickFormatter={v => `$${Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
                   width={72}
                 />
                 <Tooltip
-                  formatter={v => [`₹${fmt(v)}`, 'Close']}
+                  formatter={v => [`$${fmt(v)}`, 'Close']}
                   contentStyle={{
                     background: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
@@ -209,10 +209,10 @@ export default function StockDetail() {
       {/* Stats */}
       {quote && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Open"        value={`₹${fmt(quote.open)}`} />
-          <StatCard label="Day's High"  value={`₹${fmt(quote.high)}`} />
-          <StatCard label="Day's Low"   value={`₹${fmt(quote.low)}`} />
-          <StatCard label="Prev Close"  value={`₹${fmt(quote.previousClose)}`} />
+          <StatCard label="Open"        value={`$${fmt(quote.open)}`} />
+          <StatCard label="Day's High"  value={`$${fmt(quote.high)}`} />
+          <StatCard label="Day's Low"   value={`$${fmt(quote.low)}`} />
+          <StatCard label="Prev Close"  value={`$${fmt(quote.previousClose)}`} />
         </div>
       )}
 
@@ -234,8 +234,8 @@ export default function StockDetail() {
                 const sma20  = closes.slice(-20).reduce((a, b) => a + b, 0) / 20
                 const sma50  = closes.length >= 50 ? closes.slice(-50).reduce((a, b) => a + b, 0) / 50 : null
                 return <>
-                  <StatCard label="20-Day SMA" value={`₹${fmt(sma20)}`} />
-                  {sma50 && <StatCard label="50-Day SMA" value={`₹${fmt(sma50)}`} />}
+                  <StatCard label="20-Day SMA" value={`$${fmt(sma20)}`} />
+                  {sma50 && <StatCard label="50-Day SMA" value={`$${fmt(sma50)}`} />}
                 </>
               })()}
             </div>

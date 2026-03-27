@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { TrendingUp, TrendingDown, Wallet, ArrowLeftRight, BarChart2, Activity } from 'lucide-react'
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function Dashboard() {
@@ -54,10 +54,10 @@ export default function Dashboard() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Portfolio', value: `₹${fmt(totalValue)}`,
-            sub: `${overallPnl >= 0 ? '+' : ''}₹${fmt(Math.abs(overallPnl))} overall`,
+          { label: 'Total Portfolio', value: `$${fmt(totalValue)}`,
+            sub: `${overallPnl >= 0 ? '+' : ''}$${fmt(Math.abs(overallPnl))} overall`,
             icon: Wallet, color: 'bg-orange-500/10 text-orange-500' },
-          { label: 'Cash Available', value: `₹${fmt(profile?.virtual_balance ?? 0)}`,
+          { label: 'Cash Available', value: `$${fmt(profile?.virtual_balance ?? 0)}`,
             sub: 'Ready to invest', icon: Wallet, color: 'bg-blue-500/10 text-blue-500' },
           { label: 'Gainers Today', value: gainers,
             sub: `${stocks?.length ?? 0} stocks tracked`, icon: TrendingUp, color: 'bg-green-500/10 text-green-500' },
@@ -99,7 +99,7 @@ export default function Dashboard() {
                       <span className="text-sm font-medium">{t.symbol}</span>
                       <span className="text-xs text-muted-foreground">× {t.quantity}</span>
                     </div>
-                    <span className="text-sm font-semibold">₹{fmt(t.total)}</span>
+                    <span className="text-sm font-semibold">${fmt(t.total)}</span>
                   </div>
                 ))}
               </div>

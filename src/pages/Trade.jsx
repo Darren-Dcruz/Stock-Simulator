@@ -12,7 +12,7 @@ import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 function fmt(n) {
-  return Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function Trade() {
@@ -84,7 +84,7 @@ export default function Trade() {
         await supabase.from('profiles').update({ virtual_balance: balance + total }).eq('id', user.id)
       }
       await refreshProfile()
-      toast({ title: `${type} order executed!`, description: `${quantity} × ${selectedTicker} @ ₹${fmt(price)}` })
+      toast({ title: `${type} order executed!`, description: `${quantity} × ${selectedTicker} @ $${fmt(price)}` })
       setQty('')
       // Refresh holding
       const { data } = await supabase.from('holdings').select('*').eq('user_id', user.id).eq('symbol', selectedTicker).single()
@@ -99,7 +99,7 @@ export default function Trade() {
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Trade</h1>
-        <p className="text-sm text-muted-foreground">Buy or sell NSE stocks with virtual money</p>
+        <p className="text-sm text-muted-foreground">Buy or sell US stocks with virtual money</p>
       </div>
 
       {/* Stock selector */}
@@ -133,7 +133,7 @@ export default function Trade() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold">₹{fmt(price)}</p>
+                  <p className="text-2xl font-bold">${fmt(price)}</p>
                   <span className={`inline-flex items-center gap-1 text-sm font-semibold ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {stock.change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {stock.change >= 0 ? '+' : ''}{Number(stock.change).toFixed(2)}%
@@ -143,7 +143,7 @@ export default function Trade() {
               {holding && (
                 <div className="mt-4 pt-4 border-t text-sm text-muted-foreground flex gap-6">
                   <span>You own: <strong className="text-foreground">{holding.quantity} shares</strong></span>
-                  <span>Avg. cost: <strong className="text-foreground">₹{fmt(holding.avg_buy_price)}</strong></span>
+                  <span>Avg. cost: <strong className="text-foreground">${fmt(holding.avg_buy_price)}</strong></span>
                 </div>
               )}
             </CardContent>
@@ -173,15 +173,15 @@ export default function Trade() {
 
               {/* Order summary */}
               <div className="rounded-lg bg-muted/50 p-4 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Price per share</span><span>₹{fmt(price)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Price per share</span><span>${fmt(price)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Quantity</span><span>{qty || 0}</span></div>
                 <div className="flex justify-between font-semibold border-t pt-2 mt-2">
                   <span>{type === 'BUY' ? 'Total Cost' : 'You Receive'}</span>
-                  <span className={type === 'BUY' ? 'text-red-500' : 'text-green-500'}>₹{fmt(total)}</span>
+                  <span className={type === 'BUY' ? 'text-red-500' : 'text-green-500'}>${fmt(total)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Available balance</span>
-                  <span className={type === 'BUY' && total > balance ? 'text-red-500' : ''}>₹{fmt(balance)}</span>
+                  <span className={type === 'BUY' && total > balance ? 'text-red-500' : ''}>${fmt(balance)}</span>
                 </div>
               </div>
 

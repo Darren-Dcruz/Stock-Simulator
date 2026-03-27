@@ -5,7 +5,7 @@ import ThemeToggle from '@/components/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, TrendingUp, Briefcase, ArrowLeftRight,
-  History, Bookmark, Trophy, GraduationCap, LogOut, Menu, X, IndianRupee
+  History, Bookmark, Trophy, GraduationCap, LogOut, Menu, X, DollarSign
 } from 'lucide-react'
 
 const NAV = [
@@ -55,11 +55,11 @@ function SidebarContent({ onNav }) {
       {/* Footer */}
       <div className="px-3 py-4 border-t space-y-2">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-muted/50">
-          <IndianRupee className="h-4 w-4 text-green-500 flex-shrink-0" />
+          <DollarSign className="h-4 w-4 text-green-500 flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-semibold truncate">{profile?.username ?? 'Trader'}</p>
             <p className="text-xs text-muted-foreground">
-              ₹{Number(profile?.virtual_balance ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              ${Number(profile?.virtual_balance ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </p>
           </div>
         </div>

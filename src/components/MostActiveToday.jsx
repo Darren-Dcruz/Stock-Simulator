@@ -4,17 +4,18 @@ import { useStockData } from '@/hooks/useStockData';
 import { useNavigate } from 'react-router-dom';
 
 const SECTOR_STYLES = {
-  Banking:   'bg-blue-500/15 text-blue-500',
-  Energy:    'bg-yellow-500/15 text-yellow-500',
-  IT:        'bg-purple-500/15 text-purple-500',
-  Materials: 'bg-orange-500/15 text-orange-500',
-  default:   'bg-gray-500/15 text-gray-400',
+  Technology: 'bg-purple-500/15 text-purple-500',
+  Finance:    'bg-blue-500/15 text-blue-500',
+  Consumer:   'bg-orange-500/15 text-orange-500',
+  Automotive: 'bg-red-500/15 text-red-500',
+  Healthcare: 'bg-green-500/15 text-green-500',
+  default:    'bg-gray-500/15 text-gray-400',
 };
 
 function StockCard({ stock, onClick }) {
   const isUp = stock.change >= 0;
   const sectorCls = SECTOR_STYLES[stock.sector] ?? SECTOR_STYLES.default;
-  const formattedPrice = Number(stock.price).toLocaleString('en-IN', {
+  const formattedPrice = Number(stock.price).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -34,7 +35,7 @@ function StockCard({ stock, onClick }) {
 
       {/* card footer: price + change */}
       <div className="flex items-center justify-between px-4 pb-4">
-        <span className="font-semibold text-sm">₹{formattedPrice}</span>
+        <span className="font-semibold text-sm">${formattedPrice}</span>
         <span className={`flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-md ${
           isUp ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
         }`}>
