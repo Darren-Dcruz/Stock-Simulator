@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { fetchQuote, fetchCandles, fetchProfile, TRACKED_STOCKS } from '@/api/stockService'
+import { fetchQuote, fetchCandles, fetchProfile, TRACKED_STOCKS, MOCK_PRICES, generateMockCandles } from '@/api/stockService'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -77,9 +77,11 @@ export default function StockDetail() {
       fetchProfile(finnhubSymbol),
       fetchCandles(finnhubSymbol, range.days),
     ]).then(([q, p, c]) => {
-      if (q.status === 'fulfilled') setQuote(q.value)
+      const mockQ = MOCK_PRICES[finnhubSymbol]
+      setQuote(q.status === 'fulfilled' ? q.value : mockQ ?? null)
       if (p.status === 'fulfilled') setProfile(p.value)
-      if (c.status === 'fulfilled') setCandles(c.value)
+      const liveCandles = c.status === 'fulfilled' ? c.value : []
+      setCandles(liveCandles.length > 0 ? liveCandles : generateMockCandles(finnhubSymbol, range.days))
       setLoading(false)
     })
   }, [symbol])
@@ -89,8 +91,8 @@ export default function StockDetail() {
     if (!symbol || loading) return
     setChartLoading(true)
     fetchCandles(finnhubSymbol, range.days)
-      .then(c => setCandles(c))
-      .catch(() => {})
+      .then(c => setCandles(c.length > 0 ? c : generateMockCandles(finnhubSymbol, range.days)))
+      .catch(() => setCandles(generateMockCandles(finnhubSymbol, range.days)))
       .finally(() => setChartLoading(false))
   }, [range])
 
