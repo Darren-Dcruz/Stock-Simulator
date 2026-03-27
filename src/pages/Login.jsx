@@ -50,10 +50,10 @@ export default function Login() {
           Learn to trade.<br />Risk free.
         </h2>
         <p className="text-orange-100 text-lg mb-8">
-          Practice stock trading with ₹10,00,000 virtual money. Real NSE prices, zero real risk.
+          Practice trading with $1,000,000 virtual money. Real US market prices, zero real risk.
         </p>
         <div className="flex flex-col gap-3">
-          {['Live NSE stock prices via Finnhub', 'Virtual ₹10L portfolio to practice with', 'Track trades, P&L and portfolio growth', 'Compete on the leaderboard'].map(f => (
+          {['Live prices for stocks, ETFs, crypto & forex', 'Virtual $1M portfolio to practice with', 'Track trades, P&L and portfolio growth', 'Market news · leaderboard · watchlist'].map(f => (
             <div key={f} className="flex items-center gap-2 text-orange-100">
               <TrendingUp className="h-4 w-4 flex-shrink-0" />
               <span>{f}</span>

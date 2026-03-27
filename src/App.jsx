@@ -14,6 +14,7 @@ import History from '@/pages/History'
 import Watchlist from '@/pages/Watchlist'
 import Leaderboard from '@/pages/Leaderboard'
 import StockDetail from '@/pages/StockDetail'
+import News from '@/pages/News'
 
 function Spinner() {
   return (
@@ -38,14 +39,15 @@ function AppRoutes() {
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
-        <Route path="market" element={<Market />} />
-        <Route path="portfolio" element={<Portfolio />} />
-        <Route path="trade" element={<Trade />} />
-        <Route path="trade/:symbol" element={<Trade />} />
-        <Route path="history" element={<History />} />
-        <Route path="watchlist" element={<Watchlist />} />
-        <Route path="leaderboard" element={<Leaderboard />} />
-        <Route path="stock/:symbol" element={<StockDetail />} />
+        <Route path="market"          element={<Market />} />
+        <Route path="portfolio"       element={<Portfolio />} />
+        <Route path="trade"           element={<Trade />} />
+        <Route path="trade/:symbol"   element={<Trade />} />
+        <Route path="history"         element={<History />} />
+        <Route path="watchlist"       element={<Watchlist />} />
+        <Route path="leaderboard"     element={<Leaderboard />} />
+        <Route path="stock/:symbol"   element={<StockDetail />} />
+        <Route path="news"            element={<News />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -1,33 +1,37 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchStockQuotes, hasFinnhubKey, TRACKED_STOCKS, MOCK_PRICES } from '@/api/stockService';
+import {
+  hasFinnhubKey, MOCK_PRICES,
+  TRACKED_STOCKS, TRACKED_ETFS, TRACKED_CRYPTO, TRACKED_FOREX, TRACKED_COMMODITIES,
+  fetchStockQuotes, fetchETFQuotes, fetchCryptoQuotes, fetchForexQuotes, fetchCommodityQuotes,
+} from '@/api/stockService';
 
-function getMockData() {
-  return TRACKED_STOCKS.map(stock => ({
-    ...stock,
-    ...(MOCK_PRICES[stock.symbol] ?? { price: 100, change: 0 }),
+function mockFor(instruments) {
+  return instruments.map(inst => ({
+    ...inst,
+    ...(MOCK_PRICES[inst.symbol] ?? { price: 0, change: 0, changeAmount: 0, high: 0, low: 0, open: 0, previousClose: 0 }),
     isMock: true,
   }));
 }
 
-/**
- * React Query hook for stock data.
- * - Fetches live data from Finnhub when VITE_FINNHUB_KEY is set
- * - Falls back to static demo prices otherwise
- * - Auto-refreshes every 2 minutes
- */
-export function useStockData() {
-  return useQuery({
-    queryKey: ['stocks'],
-    queryFn: async () => {
-      if (!hasFinnhubKey()) return getMockData();
-      try {
-        return await fetchStockQuotes();
-      } catch {
-        return getMockData();
-      }
-    },
-    refetchInterval: 2 * 60 * 1000,
-    staleTime:       60 * 1000,
-    retry:           1,
-  });
+function makeHook(queryKey, instruments, fetcher) {
+  return function useAssetData() {
+    return useQuery({
+      queryKey: [queryKey],
+      queryFn: async () => {
+        if (!hasFinnhubKey()) return mockFor(instruments);
+        try { return await fetcher(); }
+        catch { return mockFor(instruments); }
+      },
+      refetchInterval:        2 * 60 * 1000,
+      staleTime:              60 * 1000,
+      retry:                  1,
+      refetchOnWindowFocus:   false,
+    });
+  };
 }
+
+export const useStockData     = makeHook('stocks',      TRACKED_STOCKS,      fetchStockQuotes);
+export const useETFData       = makeHook('etfs',        TRACKED_ETFS,        fetchETFQuotes);
+export const useCryptoData    = makeHook('crypto',      TRACKED_CRYPTO,      fetchCryptoQuotes);
+export const useForexData     = makeHook('forex',       TRACKED_FOREX,       fetchForexQuotes);
+export const useCommodityData = makeHook('commodities', TRACKED_COMMODITIES, fetchCommodityQuotes);

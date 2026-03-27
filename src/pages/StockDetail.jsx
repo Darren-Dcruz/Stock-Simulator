@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { fetchQuote, fetchCandles, fetchProfile, TRACKED_STOCKS, MOCK_PRICES, generateMockCandles } from '@/api/stockService'
+import { fetchQuote, fetchCandles, fetchProfile, ALL_INSTRUMENTS, MOCK_PRICES, generateMockCandles } from '@/api/stockService'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -61,8 +61,8 @@ export default function StockDetail() {
   const [loading, setLoading]       = useState(true)
   const [chartLoading, setChartLoading] = useState(false)
 
-  const meta          = TRACKED_STOCKS.find(s => s.ticker === symbol)
-  const finnhubSymbol = meta?.symbol ?? `NSE:${symbol}`
+  const meta          = ALL_INSTRUMENTS.find(s => s.ticker === symbol)
+  const finnhubSymbol = meta?.symbol ?? symbol
   const isUp          = (quote?.change ?? 0) >= 0
   const chartColor    = isUp ? '#22c55e' : '#ef4444'
   const minVal        = candles.length ? Math.min(...candles.map(c => c.close)) * 0.997 : 0
