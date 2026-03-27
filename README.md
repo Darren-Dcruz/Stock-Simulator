@@ -6,6 +6,16 @@ A stock market simulation and financial education platform that helps users lear
 
 ---
 
+## About
+
+StockSim Academy is an interactive stock market simulation platform designed to make financial education accessible and engaging. Users can practice trading in a risk-free environment, track virtual portfolios, and build confidence with real market concepts — all without spending real money.
+
+Whether you're a complete beginner or brushing up on investment strategies, StockSim Academy provides the tools to learn, simulate, and grow as a trader.
+
+**Live App:** [https://trade-smart-mentor.base44.app](https://trade-smart-mentor.base44.app)
+
+---
+
 ## Getting Started Locally
 
 **Prerequisites:**
