@@ -3,26 +3,26 @@ const FINNHUB_BASE = 'https://finnhub.io/api/v1';
 
 // ─── Stocks ─────────────────────────────────────────────────────────────────
 export const TRACKED_STOCKS = [
-  { symbol: 'AAPL',  ticker: 'AAPL',  name: 'Apple Inc.',            icon: '🍎', logo: 'https://logo.clearbit.com/apple.com',       sector: 'Technology', assetType: 'stock' },
-  { symbol: 'MSFT',  ticker: 'MSFT',  name: 'Microsoft Corp.',       icon: '💻', logo: 'https://logo.clearbit.com/microsoft.com',   sector: 'Technology', assetType: 'stock' },
-  { symbol: 'GOOGL', ticker: 'GOOGL', name: 'Alphabet Inc.',         icon: '🔍', logo: 'https://logo.clearbit.com/google.com',      sector: 'Technology', assetType: 'stock' },
-  { symbol: 'AMZN',  ticker: 'AMZN',  name: 'Amazon.com Inc.',       icon: '📦', logo: 'https://logo.clearbit.com/amazon.com',      sector: 'Consumer',   assetType: 'stock' },
-  { symbol: 'TSLA',  ticker: 'TSLA',  name: 'Tesla Inc.',            icon: '🚗', logo: 'https://logo.clearbit.com/tesla.com',       sector: 'Automotive', assetType: 'stock' },
-  { symbol: 'META',  ticker: 'META',  name: 'Meta Platforms Inc.',   icon: '👤', logo: 'https://logo.clearbit.com/meta.com',        sector: 'Technology', assetType: 'stock' },
-  { symbol: 'NVDA',  ticker: 'NVDA',  name: 'NVIDIA Corp.',          icon: '🎮', logo: 'https://logo.clearbit.com/nvidia.com',      sector: 'Technology', assetType: 'stock' },
-  { symbol: 'JPM',   ticker: 'JPM',   name: 'JPMorgan Chase & Co.', icon: '🏦', logo: 'https://logo.clearbit.com/jpmorgan.com',    sector: 'Finance',    assetType: 'stock' },
-  { symbol: 'JNJ',   ticker: 'JNJ',   name: 'Johnson & Johnson',     icon: '💊', logo: 'https://logo.clearbit.com/jnj.com',         sector: 'Healthcare', assetType: 'stock' },
-  { symbol: 'V',     ticker: 'V',     name: 'Visa Inc.',             icon: '💳', logo: 'https://logo.clearbit.com/visa.com',        sector: 'Finance',    assetType: 'stock' },
+  { symbol: 'AAPL',  ticker: 'AAPL',  name: 'Apple Inc.',            icon: '🍎', logo: 'https://financialmodelingprep.com/image-stock/AAPL.png',  sector: 'Technology', assetType: 'stock' },
+  { symbol: 'MSFT',  ticker: 'MSFT',  name: 'Microsoft Corp.',       icon: '💻', logo: 'https://financialmodelingprep.com/image-stock/MSFT.png',  sector: 'Technology', assetType: 'stock' },
+  { symbol: 'GOOGL', ticker: 'GOOGL', name: 'Alphabet Inc.',         icon: '🔍', logo: 'https://financialmodelingprep.com/image-stock/GOOGL.png', sector: 'Technology', assetType: 'stock' },
+  { symbol: 'AMZN',  ticker: 'AMZN',  name: 'Amazon.com Inc.',       icon: '📦', logo: 'https://financialmodelingprep.com/image-stock/AMZN.png',  sector: 'Consumer',   assetType: 'stock' },
+  { symbol: 'TSLA',  ticker: 'TSLA',  name: 'Tesla Inc.',            icon: '🚗', logo: 'https://financialmodelingprep.com/image-stock/TSLA.png',  sector: 'Automotive', assetType: 'stock' },
+  { symbol: 'META',  ticker: 'META',  name: 'Meta Platforms Inc.',   icon: '👤', logo: 'https://financialmodelingprep.com/image-stock/META.png',  sector: 'Technology', assetType: 'stock' },
+  { symbol: 'NVDA',  ticker: 'NVDA',  name: 'NVIDIA Corp.',          icon: '🎮', logo: 'https://financialmodelingprep.com/image-stock/NVDA.png',  sector: 'Technology', assetType: 'stock' },
+  { symbol: 'JPM',   ticker: 'JPM',   name: 'JPMorgan Chase & Co.', icon: '🏦', logo: 'https://financialmodelingprep.com/image-stock/JPM.png',   sector: 'Finance',    assetType: 'stock' },
+  { symbol: 'JNJ',   ticker: 'JNJ',   name: 'Johnson & Johnson',     icon: '💊', logo: 'https://financialmodelingprep.com/image-stock/JNJ.png',   sector: 'Healthcare', assetType: 'stock' },
+  { symbol: 'V',     ticker: 'V',     name: 'Visa Inc.',             icon: '💳', logo: 'https://financialmodelingprep.com/image-stock/V.png',     sector: 'Finance',    assetType: 'stock' },
 ];
 
 // ─── ETFs ────────────────────────────────────────────────────────────────────
 export const TRACKED_ETFS = [
-  { symbol: 'SPY',  ticker: 'SPY',  name: 'SPDR S&P 500 ETF Trust',          icon: '📊', logo: 'https://logo.clearbit.com/ssga.com',      sector: 'Broad Market', assetType: 'etf' },
-  { symbol: 'QQQ',  ticker: 'QQQ',  name: 'Invesco QQQ Trust (NASDAQ-100)',   icon: '📊', logo: 'https://logo.clearbit.com/invesco.com',   sector: 'Technology',   assetType: 'etf' },
-  { symbol: 'TLT',  ticker: 'TLT',  name: 'iShares 20+ Year Treasury ETF',   icon: '📊', logo: 'https://logo.clearbit.com/blackrock.com', sector: 'Bonds',        assetType: 'etf' },
-  { symbol: 'VTI',  ticker: 'VTI',  name: 'Vanguard Total Stock Market ETF',  icon: '📊', logo: 'https://logo.clearbit.com/vanguard.com', sector: 'Broad Market', assetType: 'etf' },
-  { symbol: 'IVV',  ticker: 'IVV',  name: 'iShares Core S&P 500 ETF',        icon: '📊', logo: 'https://logo.clearbit.com/blackrock.com', sector: 'Broad Market', assetType: 'etf' },
-  { symbol: 'AGG',  ticker: 'AGG',  name: 'iShares Core US Aggregate Bond ETF',icon: '📊', logo: 'https://logo.clearbit.com/blackrock.com',sector: 'Bonds',       assetType: 'etf' },
+  { symbol: 'SPY',  ticker: 'SPY',  name: 'SPDR S&P 500 ETF Trust',           icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/SPY.png',  sector: 'Broad Market', assetType: 'etf' },
+  { symbol: 'QQQ',  ticker: 'QQQ',  name: 'Invesco QQQ Trust (NASDAQ-100)',   icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/QQQ.png',  sector: 'Technology',   assetType: 'etf' },
+  { symbol: 'TLT',  ticker: 'TLT',  name: 'iShares 20+ Year Treasury ETF',   icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/TLT.png',  sector: 'Bonds',        assetType: 'etf' },
+  { symbol: 'VTI',  ticker: 'VTI',  name: 'Vanguard Total Stock Market ETF',  icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/VTI.png',  sector: 'Broad Market', assetType: 'etf' },
+  { symbol: 'IVV',  ticker: 'IVV',  name: 'iShares Core S&P 500 ETF',        icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/IVV.png',  sector: 'Broad Market', assetType: 'etf' },
+  { symbol: 'AGG',  ticker: 'AGG',  name: 'iShares Core US Aggregate Bond ETF',icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/AGG.png', sector: 'Bonds',        assetType: 'etf' },
 ];
 
 // ─── Crypto ──────────────────────────────────────────────────────────────────
