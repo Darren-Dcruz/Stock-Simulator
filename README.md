@@ -46,7 +46,7 @@
 | Feature | Description |
 |---|---|
 | **Price Alerts** | Set above/below target alerts on any instrument |
-| **Email Notifications** | Triggered alerts send email via Resend (Vercel Cron, every 5 min on Pro / daily on Hobby) |
+| **Email Notifications** | Triggered alerts send email via Resend (Vercel Cron — daily on Hobby, up to every 5 min on Pro) |
 | **Watchlist** | Save any asset and monitor live prices in one place |
 | **Auto Alert Checking** | Alerts evaluated on every live price refresh (every 2 min) |
 
@@ -208,7 +208,7 @@ Set these environment variables in **Vercel → Settings → Environment Variabl
 
 > **Note:** `FINNHUB_KEY` has no `VITE_` prefix — it is never bundled into the client. All Finnhub requests go through the `/api/finnhub` serverless proxy.
 
-> **Cron:** Price alert emails run every 5 min (`*/5 * * * *`) — requires Vercel Pro. On Hobby plan, change to `0 9 * * *` (daily at 9am UTC).
+> **Cron:** Price alert emails run once daily (`0 0 * * *`, midnight UTC) — Vercel Hobby plan limit. Upgrade to Pro to use a more frequent schedule (e.g. `*/5 * * * *`).
 
 > **GitHub Secrets:** Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to your GitHub repository secrets for the CI build step to pass.
 
@@ -229,8 +229,8 @@ src/
 │   └── ui/                   # shadcn/ui primitives
 ├── hooks/                    # React Query data hooks
 ├── lib/
-│   ├── alertService.ts       # Price alert CRUD + checking (fully typed)
-│   ├── tradeService.ts       # Atomic trade execution with rollback (fully typed)
+│   ├── alertService.js       # Price alert CRUD + checking
+│   ├── tradeService.js       # Atomic trade execution with rollback
 │   ├── AuthContext.tsx       # Auth state + typed context
 │   ├── MarketDataContext.tsx # Unified live price provider (typed)
 │   └── supabase.ts           # Supabase client
