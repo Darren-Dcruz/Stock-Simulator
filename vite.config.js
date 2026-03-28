@@ -38,23 +38,18 @@ function devApiPlugin(apiKey) {
         req.on('data', chunk => { body += chunk })
         req.on('end', async () => {
           try {
-            if (!apiKey) throw new Error('GEMINI_API_KEY not set in .env.local')
-            const { GoogleGenerativeAI } = await import('@google/generative-ai')
+            if (!apiKey) throw new Error('GROQ_API_KEY not set in .env.local')
+            const Groq = (await import('groq-sdk')).default
             const { messages } = JSON.parse(body)
-            const genAI = new GoogleGenerativeAI(apiKey)
-            const model = genAI.getGenerativeModel({
-              model: 'gemini-2.0-flash',
-              systemInstruction: SYSTEM_PROMPT,
+            const groq = new Groq({ apiKey })
+            const completion = await groq.chat.completions.create({
+              model: 'llama-3.3-70b-versatile',
+              messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+              max_tokens: 1024,
             })
-            const history = messages.slice(0, -1).map(m => ({
-              role: m.role === 'assistant' ? 'model' : 'user',
-              parts: [{ text: m.content }],
-            }))
-            const lastMessage = messages[messages.length - 1].content
-            const chat = model.startChat({ history })
-            const result = await chat.sendMessage(lastMessage)
+            const text = completion.choices[0]?.message?.content ?? ''
             res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ message: result.response.text() }))
+            res.end(JSON.stringify({ message: text }))
           } catch (err) {
             res.writeHead(500, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify({ error: err.message }))
@@ -68,7 +63,7 @@ function devApiPlugin(apiKey) {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
-    plugins: [react(), devApiPlugin(env.GEMINI_API_KEY)],
+    plugins: [react(), devApiPlugin(env.GROQ_API_KEY)],
     resolve: {
       alias: { "@": path.resolve(__dirname, "./src") },
     },

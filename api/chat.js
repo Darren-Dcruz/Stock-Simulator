@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 const SYSTEM_PROMPT = `You are an AI Market Analyst for StockSim Academy, a virtual stock trading simulator designed for students learning to invest.
 
@@ -33,26 +33,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_PROMPT,
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages,
+      ],
+      max_tokens: 1024,
     })
 
-    // Gemini uses 'user' and 'model' roles (not 'assistant')
-    const history = messages.slice(0, -1).map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }))
-
-    const lastMessage = messages[messages.length - 1].content
-
-    const chat = model.startChat({ history })
-    const result = await chat.sendMessage(lastMessage)
-    const text = result.response.text()
-
+    const text = completion.choices[0]?.message?.content ?? ''
     res.status(200).json({ message: text })
   } catch (err) {
-    console.error('Gemini API error:', err)
+    console.error('Groq API error:', err)
     res.status(500).json({ error: err.message ?? 'Internal server error' })
   }
 }
