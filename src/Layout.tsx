@@ -3,10 +3,11 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/AuthContext'
 import ThemeToggle from '@/components/ThemeToggle'
 import AiChatPanel from '@/components/AiChatPanel'
+import OnboardingModal, { useOnboarding } from '@/components/OnboardingModal'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, TrendingUp, Briefcase, ArrowLeftRight,
-  History, Bookmark, Trophy, GraduationCap, LogOut, Menu, X, DollarSign, Newspaper
+  History, Bookmark, Trophy, GraduationCap, LogOut, Menu, X, DollarSign, Newspaper, HelpCircle
 } from 'lucide-react'
 
 const NAV = [
@@ -20,7 +21,7 @@ const NAV = [
   { to: '/news',        icon: Newspaper,       label: 'News'       },
 ]
 
-function SidebarContent({ onNav }) {
+function SidebarContent({ onNav, onTakeTour }: { onNav?: () => void; onTakeTour?: () => void }) {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
 
@@ -63,6 +64,16 @@ function SidebarContent({ onNav }) {
           </div>
         </div>
         <ThemeToggle />
+        {onTakeTour && (
+          <Button
+            variant="ghost" size="sm"
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+            onClick={onTakeTour}
+          >
+            <HelpCircle className="h-4 w-4" />
+            Take tour again
+          </Button>
+        )}
         <Button
           variant="ghost" size="sm"
           className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
@@ -78,11 +89,12 @@ function SidebarContent({ onNav }) {
 
 export default function Layout() {
   const [open, setOpen] = useState(false)
+  const { show: showOnboarding, dismiss: dismissOnboarding, restart: restartOnboarding } = useOnboarding()
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <aside className="hidden md:flex flex-col w-56 border-r bg-card flex-shrink-0">
-        <SidebarContent />
+        <SidebarContent onTakeTour={restartOnboarding} />
       </aside>
 
       {open && (
@@ -92,7 +104,10 @@ export default function Layout() {
             <button className="absolute top-4 right-3 p-1" onClick={() => setOpen(false)}>
               <X className="h-5 w-5" />
             </button>
-            <SidebarContent onNav={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }) }} />
+            <SidebarContent
+              onNav={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }) }}
+              onTakeTour={() => { setOpen(false); restartOnboarding() }}
+            />
           </aside>
         </div>
       )}
@@ -113,6 +128,7 @@ export default function Layout() {
       </div>
 
       <AiChatPanel />
+      <OnboardingModal open={showOnboarding} onClose={dismissOnboarding} />
     </div>
   )
 }
