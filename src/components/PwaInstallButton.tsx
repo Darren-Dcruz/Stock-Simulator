@@ -7,17 +7,25 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+type WindowWithPrompt = Window & { __pwaInstallPrompt?: BeforeInstallPromptEvent }
+
 export default function PwaInstallButton() {
-  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [installed, setInstalled] = useState(false)
+  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(
+    // Pick up event captured before React mounted
+    () => (window as WindowWithPrompt).__pwaInstallPrompt ?? null
+  )
+  const [installed, setInstalled] = useState(
+    () => window.matchMedia('(display-mode: standalone)').matches
+  )
 
   useEffect(() => {
+    // Also listen for future events (e.g. after service worker activates)
     const handler = (e: Event) => {
       e.preventDefault()
       setPrompt(e as BeforeInstallPromptEvent)
     }
     window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', () => setInstalled(true))
+    window.addEventListener('appinstalled', () => { setInstalled(true); setPrompt(null) })
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
@@ -30,6 +38,7 @@ export default function PwaInstallButton() {
     if (outcome === 'accepted') {
       setPrompt(null)
       setInstalled(true)
+      delete (window as WindowWithPrompt).__pwaInstallPrompt
     }
   }
 
