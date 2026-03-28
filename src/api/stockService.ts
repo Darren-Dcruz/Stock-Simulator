@@ -211,8 +211,18 @@ async function fetchOne(inst) {
   }
 }
 
-export async function fetchStockQuotes()     { return Promise.all(TRACKED_STOCKS.map(fetchOne)); }
-export async function fetchETFQuotes()       { return Promise.all(TRACKED_ETFS.map(fetchOne)); }
-export async function fetchCryptoQuotes()    { return Promise.all(TRACKED_CRYPTO.map(fetchOne)); }
-export async function fetchForexQuotes()     { return Promise.all(TRACKED_FOREX.map(fetchOne)); }
-export async function fetchCommodityQuotes() { return Promise.all(TRACKED_COMMODITIES.map(fetchOne)); }
+/** Fetch a list sequentially with a small delay between each to avoid rate-limit spikes */
+async function fetchSequential(list: typeof TRACKED_STOCKS, delayMs = 120) {
+  const results = [];
+  for (const inst of list) {
+    results.push(await fetchOne(inst));
+    await new Promise(r => setTimeout(r, delayMs));
+  }
+  return results;
+}
+
+export async function fetchStockQuotes()     { return fetchSequential(TRACKED_STOCKS, 100); }
+export async function fetchETFQuotes()       { return fetchSequential(TRACKED_ETFS, 100); }
+export async function fetchCryptoQuotes()    { return fetchSequential(TRACKED_CRYPTO, 100); }
+export async function fetchForexQuotes()     { return fetchSequential(TRACKED_FOREX, 100); }
+export async function fetchCommodityQuotes() { return fetchSequential(TRACKED_COMMODITIES, 100); }
