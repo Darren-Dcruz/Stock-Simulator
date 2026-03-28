@@ -1,6 +1,15 @@
 import { supabase } from '@/lib/supabase'
+import type { PriceAlert, LiveInstrument } from '@/types'
 
-export async function createAlert({ userId, symbol, name, targetPrice, direction }) {
+interface CreateAlertParams {
+  userId: string
+  symbol: string
+  name: string
+  targetPrice: number
+  direction: 'above' | 'below'
+}
+
+export async function createAlert({ userId, symbol, name, targetPrice, direction }: CreateAlertParams): Promise<PriceAlert> {
   const { data, error } = await supabase.from('price_alerts').insert({
     user_id:      userId,
     symbol,
@@ -10,15 +19,15 @@ export async function createAlert({ userId, symbol, name, targetPrice, direction
     triggered:    false,
   }).select().single()
   if (error) throw new Error(error.message)
-  return data
+  return data as PriceAlert
 }
 
-export async function deleteAlert(id) {
+export async function deleteAlert(id: string): Promise<void> {
   const { error } = await supabase.from('price_alerts').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }
 
-export async function getUserAlerts(userId) {
+export async function getUserAlerts(userId: string): Promise<PriceAlert[]> {
   const { data, error } = await supabase
     .from('price_alerts')
     .select('*')
@@ -26,18 +35,21 @@ export async function getUserAlerts(userId) {
     .eq('triggered', false)
     .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
-  return data ?? []
+  return (data ?? []) as PriceAlert[]
 }
 
 /**
  * Check all active alerts against current live prices.
  * Returns the list of newly-triggered alerts (already marked triggered in DB).
  */
-export async function checkAlerts(userId, allLive) {
+export async function checkAlerts(
+  userId: string,
+  allLive: LiveInstrument[],
+): Promise<Array<PriceAlert & { currentPrice: number }>> {
   const alerts = await getUserAlerts(userId)
   if (!alerts.length) return []
 
-  const triggered = []
+  const triggered: Array<PriceAlert & { currentPrice: number }> = []
   for (const alert of alerts) {
     const live = allLive.find(s => s.ticker === alert.symbol)
     if (!live || !live.price) continue

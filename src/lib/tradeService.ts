@@ -1,27 +1,38 @@
 import { supabase } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
+import type { Instrument, Holding, Profile } from '@/types'
+
+interface TradeParams {
+  user: User
+  profile: Profile
+  stock: Pick<Instrument, 'ticker' | 'name'>
+  meta?: Instrument
+  type: 'BUY' | 'SELL'
+  quantity: number
+  price: number
+  holding: Holding | null
+}
 
 /**
  * Executes a BUY or SELL trade with rollback on partial failure.
- *
- * @param {object} params
- * @param {object} params.user      – Supabase auth user
- * @param {object} params.profile   – user profile (virtual_balance)
- * @param {object} params.stock     – live instrument data (ticker, name, price, change)
- * @param {object} params.meta      – static instrument metadata (assetType, etc.)
- * @param {'BUY'|'SELL'} params.type
- * @param {number} params.quantity  – number of units
- * @param {number} params.price     – current price per unit
- * @param {object|null} params.holding – existing holding row (or null)
- * @returns {Promise<{ holding: object|null }>} updated holding after trade
+ * @returns updated holding after trade (null if fully sold)
  * @throws {Error} with a user-readable message on any failure
  */
-export async function executeTrade({ user, profile, stock, meta, type, quantity, price, holding }) {
+export async function executeTrade({
+  user,
+  profile,
+  stock,
+  type,
+  quantity,
+  price,
+  holding,
+}: TradeParams): Promise<{ holding: Holding | null }> {
   // ── Input validation ──────────────────────────────────────────────────────
   if (!stock)              throw new Error('No instrument selected')
   if (!quantity || quantity <= 0) throw new Error('Enter a valid quantity')
 
   const total   = quantity * price
-  const balance = profile?.virtual_balance ?? 0
+  const balance = profile.virtual_balance
 
   if (type === 'BUY' && total > balance) {
     throw new Error(`Insufficient balance — need $${total.toFixed(2)}, have $${balance.toFixed(2)}`)
@@ -47,6 +58,7 @@ export async function executeTrade({ user, profile, stock, meta, type, quantity,
     .single()
 
   if (tradeErr) throw new Error(`Trade failed: ${tradeErr.message}`)
+  if (!tradeRow) throw new Error('Trade failed: no row returned')
 
   try {
     // ── 2. Update holdings ──────────────────────────────────────────────────
@@ -73,16 +85,17 @@ export async function executeTrade({ user, profile, stock, meta, type, quantity,
       if (error) throw new Error(`Balance update failed: ${error.message}`)
 
     } else {
-      // SELL
-      const newQty = holding.quantity - quantity
+      // SELL — holding is guaranteed non-null by the validation above
+      const h = holding!
+      const newQty = h.quantity - quantity
       if (newQty <= 0) {
-        const { error } = await supabase.from('holdings').delete().eq('id', holding.id)
+        const { error } = await supabase.from('holdings').delete().eq('id', h.id)
         if (error) throw new Error(`Holdings delete failed: ${error.message}`)
       } else {
         const { error } = await supabase
           .from('holdings')
           .update({ quantity: newQty, updated_at: new Date() })
-          .eq('id', holding.id)
+          .eq('id', h.id)
         if (error) throw new Error(`Holdings update failed: ${error.message}`)
       }
       // Add proceeds to balance
@@ -106,5 +119,5 @@ export async function executeTrade({ user, profile, stock, meta, type, quantity,
     .eq('symbol', stock.ticker)
     .single()
 
-  return { holding: updatedHolding ?? null }
+  return { holding: (updatedHolding as Holding) ?? null }
 }

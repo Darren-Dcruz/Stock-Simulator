@@ -64,7 +64,8 @@ export interface Holding {
 export interface Profile {
   id: string;
   email: string;
-  balance: number;
+  username?: string | null;
+  virtual_balance: number;
   created_at: string;
 }
 

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { checkAlerts } from '@/lib/alertService'
+import type { LiveInstrument } from '@/types'
 
 // ── Mock Supabase ─────────────────────────────────────────────────────────────
 const mockGetAlerts = vi.fn()
@@ -33,7 +34,7 @@ vi.mock('@/lib/alertService', async (importOriginal) => {
 
 describe('checkAlerts', () => {
   it('returns [] when there are no active alerts', async () => {
-    const result = await checkAlerts('user-1', [{ ticker: 'AAPL', price: 200 }])
+    const result = await checkAlerts('user-1', [{ ticker: 'AAPL', price: 200 } as unknown as LiveInstrument])
     expect(result).toEqual([])
   })
 })
