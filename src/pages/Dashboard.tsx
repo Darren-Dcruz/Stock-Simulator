@@ -6,18 +6,21 @@ import { useMarketData } from '@/lib/MarketDataContext'
 import MostActiveToday from '@/components/MostActiveToday'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, Wallet, ArrowLeftRight, BarChart2, Activity } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { TrendingUp, Wallet, ArrowLeftRight, BarChart2, Activity } from 'lucide-react'
 
 function fmt(n) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function Dashboard() {
-  const { profile, user } = useAuth()
+  const { profile, user, refreshProfile } = useAuth()
   const { stocks, allLive } = useMarketData()
   const navigate            = useNavigate()
   const [holdings, setHoldings] = useState([])
   const [recentTrades, setRecentTrades] = useState([])
+  const [usernameInput, setUsernameInput] = useState('')
+  const [savingUsername, setSavingUsername] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -25,6 +28,14 @@ export default function Dashboard() {
     supabase.from('trades').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5)
       .then(({ data }) => setRecentTrades(data ?? []))
   }, [user])
+
+  async function saveUsername() {
+    if (!usernameInput.trim() || !user) return
+    setSavingUsername(true)
+    await supabase.from('profiles').update({ username: usernameInput.trim() }).eq('id', user.id)
+    await refreshProfile()
+    setSavingUsername(false)
+  }
 
   const holdingsValue = holdings.reduce((sum, h) => {
     const live = allLive.find(s => s.ticker === h.symbol)
@@ -50,6 +61,28 @@ export default function Dashboard() {
           <ArrowLeftRight className="h-4 w-4" /> Trade Now
         </Button>
       </div>
+
+      {/* Username prompt */}
+      {profile && !profile.username && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 py-3">
+          <p className="text-sm text-orange-600 dark:text-orange-400 flex-1">
+            Set a display name so you appear on the leaderboard.
+          </p>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Input
+              placeholder="Choose a username"
+              value={usernameInput}
+              onChange={e => setUsernameInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && saveUsername()}
+              className="h-8 text-sm"
+            />
+            <Button size="sm" onClick={saveUsername} disabled={savingUsername || !usernameInput.trim()}
+              className="bg-orange-500 hover:bg-orange-600 text-white shrink-0">
+              Save
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -63,7 +63,9 @@ export default function Leaderboard() {
                         {MEDALS[i] ?? <span className="text-muted-foreground">{i + 1}</span>}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-medium">{row.username ?? 'Anonymous'}</span>
+                        <span className="font-medium">
+                          {row.username ?? `${String(row.id).slice(0, 8)}…`}
+                        </span>
                         {isMe && <span className="ml-2 text-xs bg-orange-500 text-white px-1.5 py-0.5 rounded-full">you</span>}
                       </td>
                       <td className="px-4 py-3 text-right font-semibold">${fmt(row.total_value)}</td>
