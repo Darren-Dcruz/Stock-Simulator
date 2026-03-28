@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { queryClientInstance } from '@/lib/query-client'
 import { AuthProvider, useAuth } from '@/lib/AuthContext'
 import { MarketDataProvider } from '@/lib/MarketDataContext'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import Layout from '@/Layout'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
@@ -39,16 +40,16 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route index element={<Dashboard />} />
-        <Route path="market"          element={<Market />} />
-        <Route path="portfolio"       element={<Portfolio />} />
-        <Route path="trade"           element={<Trade />} />
-        <Route path="trade/:symbol"   element={<Trade />} />
-        <Route path="history"         element={<History />} />
-        <Route path="watchlist"       element={<Watchlist />} />
-        <Route path="leaderboard"     element={<Leaderboard />} />
-        <Route path="stock/:symbol"   element={<StockDetail />} />
-        <Route path="news"            element={<News />} />
+        <Route index element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+        <Route path="market"          element={<ErrorBoundary><Market /></ErrorBoundary>} />
+        <Route path="portfolio"       element={<ErrorBoundary><Portfolio /></ErrorBoundary>} />
+        <Route path="trade"           element={<ErrorBoundary><Trade /></ErrorBoundary>} />
+        <Route path="trade/:symbol"   element={<ErrorBoundary><Trade /></ErrorBoundary>} />
+        <Route path="history"         element={<ErrorBoundary><History /></ErrorBoundary>} />
+        <Route path="watchlist"       element={<ErrorBoundary><Watchlist /></ErrorBoundary>} />
+        <Route path="leaderboard"     element={<ErrorBoundary><Leaderboard /></ErrorBoundary>} />
+        <Route path="stock/:symbol"   element={<ErrorBoundary><StockDetail /></ErrorBoundary>} />
+        <Route path="news"            element={<ErrorBoundary><News /></ErrorBoundary>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

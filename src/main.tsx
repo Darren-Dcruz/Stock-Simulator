@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import '@/index.css'
 
 // Capture the PWA install prompt as early as possible (before React mounts)
@@ -11,5 +12,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 })
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <App />
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 )
