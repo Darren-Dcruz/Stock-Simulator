@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
@@ -17,7 +16,7 @@ export default function Login() {
   const { signIn, signUp }      = useAuth()
   const navigate                = useNavigate()
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -33,8 +32,8 @@ export default function Login() {
         setError('Check your email to confirm your account, then sign in.')
         setTab('signin')
       }
-    } catch (err) {
-      setError(err.message ?? 'Something went wrong')
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Something went wrong')
     }
     setLoading(false)
   }

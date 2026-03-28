@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import type { Quote, Candle, FinnhubProfile, PriceAlert } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { fetchQuote, fetchCandles, fetchProfile, ALL_INSTRUMENTS, MOCK_PRICES, generateMockCandles } from '@/api/stockService'
@@ -22,12 +22,19 @@ const RANGES = [
   { label: '1Y', days: 365 },
 ]
 
-function calcTrend(candles) {
+interface CalcTrendResult {
+  label: string
+  color: string
+  bg: string
+  desc: string
+}
+
+function calcTrend(candles: Candle[]): CalcTrendResult | null {
   if (!candles || candles.length < 20) return null
   const closes = candles.map(c => c.close)
   const sma20   = closes.slice(-20).reduce((a, b) => a + b, 0) / 20
   const sma50   = closes.length >= 50 ? closes.slice(-50).reduce((a, b) => a + b, 0) / 50 : null
-  const current = closes.at(-1)
+  const current = closes.at(-1)!
   if (sma50) {
     if (current > sma20 && sma20 > sma50) return { label: 'Strong Uptrend',   color: 'text-green-500', bg: 'bg-green-500/10', desc: 'Price is above both the 20-day and 50-day moving averages — bullish momentum.' }
     if (current < sma20 && sma20 < sma50) return { label: 'Strong Downtrend', color: 'text-red-500',   bg: 'bg-red-500/10',   desc: 'Price is below both the 20-day and 50-day moving averages — bearish momentum.' }
@@ -36,11 +43,17 @@ function calcTrend(candles) {
   return               { label: 'Downtrend', color: 'text-red-500',   bg: 'bg-red-500/10',   desc: 'Price is trading below the 20-day moving average.' }
 }
 
-function fmt(n, decimals = 2) {
+function fmt(n: number, decimals = 2) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
 }
 
-function StatCard({ label, value, sub }) {
+interface StatCardProps {
+  label: string
+  value: React.ReactNode
+  sub?: React.ReactNode
+}
+
+function StatCard({ label, value, sub }: StatCardProps) {
   return (
     <Card>
       <CardContent className="p-4">
@@ -53,24 +66,24 @@ function StatCard({ label, value, sub }) {
 }
 
 export default function StockDetail() {
-  const { symbol }   = useParams()
+  const { symbol }   = useParams<{ symbol: string }>()
   const navigate     = useNavigate()
   const { user }     = useAuth()
   const { toast }    = useToast()
 
   const [range, setRange]           = useState(RANGES[1])
-  const [quote, setQuote]           = useState(null)
-  const [candles, setCandles]       = useState([])
-  const [profile, setProfile]       = useState(null)
+  const [quote, setQuote]           = useState<Quote | null>(null)
+  const [candles, setCandles]       = useState<Candle[]>([])
+  const [profile, setProfile]       = useState<FinnhubProfile | null>(null)
   const [loading, setLoading]       = useState(true)
   const [chartLoading, setChartLoading] = useState(false)
-  const [alerts, setAlerts]         = useState([])
+  const [alerts, setAlerts]         = useState<PriceAlert[]>([])
   const [alertPrice, setAlertPrice] = useState('')
-  const [alertDir, setAlertDir]     = useState('above')
+  const [alertDir, setAlertDir]     = useState<'above' | 'below'>('above')
   const [alertSaving, setAlertSaving] = useState(false)
 
   const meta          = ALL_INSTRUMENTS.find(s => s.ticker === symbol)
-  const finnhubSymbol = meta?.symbol ?? symbol
+  const finnhubSymbol = meta?.symbol ?? symbol ?? ''
   const isUp          = (quote?.change ?? 0) >= 0
   const chartColor    = isUp ? '#22c55e' : '#ef4444'
   const minVal        = candles.length ? Math.min(...candles.map(c => c.close)) * 0.997 : 0
@@ -85,7 +98,7 @@ export default function StockDetail() {
       fetchProfile(finnhubSymbol),
       fetchCandles(finnhubSymbol, range.days),
     ]).then(([q, p, c]) => {
-      const mockQ = MOCK_PRICES[finnhubSymbol]
+      const mockQ = MOCK_PRICES[finnhubSymbol as keyof typeof MOCK_PRICES]
       setQuote(q.status === 'fulfilled' ? q.value : mockQ ?? null)
       if (p.status === 'fulfilled') setProfile(p.value)
       const liveCandles = c.status === 'fulfilled' ? c.value : []
@@ -106,28 +119,31 @@ export default function StockDetail() {
 
   useEffect(() => {
     if (!user) return
-    getUserAlerts(user.id).then(data => setAlerts(data.filter(a => a.symbol === symbol)))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getUserAlerts(user.id).then((data: any) => setAlerts((data as PriceAlert[]).filter((a: PriceAlert) => a.symbol === symbol)))
   }, [user, symbol])
 
   async function saveAlert() {
     if (!alertPrice || !user) return
     setAlertSaving(true)
     try {
-      const a = await createAlert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const a = await (createAlert as any)({
         userId: user.id, symbol, name: meta?.name ?? symbol,
         targetPrice: parseFloat(alertPrice), direction: alertDir,
-      })
+      }) as PriceAlert
       setAlerts(prev => [a, ...prev])
       setAlertPrice('')
       toast({ title: 'Alert set', description: `Alert when ${symbol} goes ${alertDir} $${alertPrice}` })
-    } catch (err) {
-      toast({ title: 'Failed to create alert', description: err.message, variant: 'destructive' })
+    } catch (err: unknown) {
+      toast({ title: 'Failed to create alert', description: (err as Error).message, variant: 'destructive' })
     }
     setAlertSaving(false)
   }
 
-  async function removeAlert(id) {
-    await deleteAlert(id)
+  async function removeAlert(id: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (deleteAlert as any)(id)
     setAlerts(prev => prev.filter(a => a.id !== id))
     toast({ title: 'Alert removed' })
   }
@@ -153,7 +169,7 @@ export default function StockDetail() {
           <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-muted transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <AssetLogo logo={meta?.logo} icon={meta?.icon ?? '📈'} name={meta?.name ?? symbol} className="w-14 h-14 text-3xl" />
+          <AssetLogo logo={meta?.logo} icon={meta?.icon ?? '📈'} name={meta?.name ?? symbol ?? ''} className="w-14 h-14 text-3xl" />
           <div>
             <h1 className="text-2xl font-bold">{symbol}</h1>
             <p className="text-muted-foreground text-sm">{meta?.name ?? profile?.name ?? symbol}</p>
@@ -222,7 +238,7 @@ export default function StockDetail() {
                   width={72}
                 />
                 <Tooltip
-                  formatter={v => [`$${fmt(v)}`, 'Close']}
+                  formatter={v => [`$${fmt(v as number)}`, 'Close']}
                   contentStyle={{
                     background: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
@@ -263,7 +279,7 @@ export default function StockDetail() {
           <CardContent className="space-y-4">
             <div className="flex gap-2 flex-wrap">
               <div className="flex rounded-md border overflow-hidden text-sm">
-                {['above','below'].map(d => (
+                {(['above','below'] as const).map(d => (
                   <button key={d} onClick={() => setAlertDir(d)}
                     className={`px-3 py-2 font-medium capitalize transition-colors ${alertDir === d ? 'bg-orange-500 text-white' : 'text-muted-foreground hover:bg-muted'}`}
                   >{d}</button>

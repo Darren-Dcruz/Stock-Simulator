@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { Trade, Holding } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useMarketData } from '@/lib/MarketDataContext'
@@ -19,24 +19,6 @@ const STARTING_BALANCE = 1_000_000
 
 function fmt(n: number) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-interface Trade {
-  id: string
-  symbol: string
-  type: 'BUY' | 'SELL'
-  quantity: number
-  price: number
-  total: number
-  created_at: string
-}
-
-interface Holding {
-  id: string
-  symbol: string
-  name: string
-  quantity: number
-  avg_buy_price: number
 }
 
 interface BenchmarkPoint {
@@ -61,8 +43,8 @@ export default function Portfolio() {
       supabase.from('trades').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
       fetchCandles('SPY', 30).catch(() => []),
     ]).then(([{ data: h }, { data: t }, candles]) => {
-      setHoldings(h ?? [])
-      setTrades(t ?? [])
+      setHoldings((h as Holding[]) ?? [])
+      setTrades((t as Trade[]) ?? [])
       setSpyCandles((candles as { date: string; close: number }[]).length
         ? candles as { date: string; close: number }[]
         : [])

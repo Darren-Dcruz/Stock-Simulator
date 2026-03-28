@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '@/lib/AuthContext'

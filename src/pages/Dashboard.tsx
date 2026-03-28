@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { Trade, Holding } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useMarketData } from '@/lib/MarketDataContext'
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TrendingUp, Wallet, ArrowLeftRight, BarChart2, Activity } from 'lucide-react'
 
-function fmt(n) {
+function fmt(n: number) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
@@ -18,16 +18,16 @@ export default function Dashboard() {
   const { profile, user, refreshProfile } = useAuth()
   const { stocks, allLive } = useMarketData()
   const navigate            = useNavigate()
-  const [holdings, setHoldings] = useState([])
-  const [recentTrades, setRecentTrades] = useState([])
+  const [holdings, setHoldings] = useState<Holding[]>([])
+  const [recentTrades, setRecentTrades] = useState<Trade[]>([])
   const [usernameInput, setUsernameInput] = useState('')
   const [savingUsername, setSavingUsername] = useState(false)
 
   useEffect(() => {
     if (!user) return
-    supabase.from('holdings').select('*').eq('user_id', user.id).then(({ data }) => setHoldings(data ?? []))
+    supabase.from('holdings').select('*').eq('user_id', user.id).then(({ data }) => setHoldings((data as Holding[]) ?? []))
     supabase.from('trades').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5)
-      .then(({ data }) => setRecentTrades(data ?? []))
+      .then(({ data }) => setRecentTrades((data as Trade[]) ?? []))
   }, [user])
 
   async function saveUsername() {

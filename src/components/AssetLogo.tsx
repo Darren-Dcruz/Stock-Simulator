@@ -1,17 +1,13 @@
-// @ts-nocheck
 import { useState } from 'react'
 
-/**
- * Renders a company/asset logo image, falling back to the emoji icon
- * if the image URL is missing or fails to load.
- *
- * Props:
- *   logo      – URL string (or null/undefined for emoji-only assets)
- *   icon      – emoji fallback string
- *   name      – alt text for the image
- *   className – size + any extra Tailwind classes (e.g. "w-9 h-9 text-base")
- */
-export default function AssetLogo({ logo, icon, name, className = '' }) {
+interface AssetLogoProps {
+  logo?: string
+  icon: string
+  name: string
+  className?: string
+}
+
+export default function AssetLogo({ logo, icon, name, className = '' }: AssetLogoProps) {
   const [err, setErr] = useState(false)
 
   if (logo && !err) {

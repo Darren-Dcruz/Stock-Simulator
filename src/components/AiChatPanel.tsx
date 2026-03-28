@@ -1,14 +1,14 @@
-// @ts-nocheck
 import { useState, useRef, useEffect } from 'react'
+import type { ChatMessage } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Bot, X, Send, Loader2 } from 'lucide-react'
 
 export default function AiChatPanel() {
-  const [open, setOpen]       = useState(false)
-  const [messages, setMessages] = useState([])
-  const [input, setInput]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef(null)
+  const [open, setOpen]         = useState(false)
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [input, setInput]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -16,7 +16,7 @@ export default function AiChatPanel() {
 
   async function send() {
     if (!input.trim() || loading) return
-    const userMsg = { role: 'user', content: input.trim() }
+    const userMsg: ChatMessage = { role: 'user', content: input.trim() }
     const next = [...messages, userMsg]
     setMessages(next)
     setInput('')
@@ -27,11 +27,11 @@ export default function AiChatPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: next }),
       })
-      const data = await res.json()
+      const data = await res.json() as { message?: string; error?: string }
       if (!res.ok) throw new Error(data.error ?? 'Request failed')
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
-    } catch (err) {
-      const msg = err.message ?? ''
+      setMessages(prev => [...prev, { role: 'assistant', content: data.message ?? '' }])
+    } catch (err: unknown) {
+      const msg = (err as Error).message ?? ''
       const friendly = msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests')
         ? 'Rate limit reached. Please wait a moment and try again.'
         : msg.includes('API_KEY') || msg.includes('not set')

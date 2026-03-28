@@ -1,12 +1,17 @@
-// @ts-nocheck
 import { memo } from 'react';
+import type { LiveInstrument } from '@/types';
 import { TrendingUp, TrendingDown, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMarketData } from '@/lib/MarketDataContext';
 import { useNavigate } from 'react-router-dom';
 import AssetLogo from '@/components/AssetLogo';
 
-const StockCard = memo(function StockCard({ stock, onClick }) {
+interface StockCardProps {
+  stock: LiveInstrument
+  onClick: () => void
+}
+
+const StockCard = memo(function StockCard({ stock, onClick }: StockCardProps) {
   const isUp = stock.change >= 0;
   const formattedPrice = Number(stock.price).toLocaleString('en-US', {
     minimumFractionDigits: 2,

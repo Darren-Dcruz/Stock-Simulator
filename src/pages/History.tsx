@@ -1,24 +1,24 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react'
+import type { Trade } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 
-function fmt(n) {
+function fmt(n: number) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function History() {
   const { user } = useAuth()
-  const [trades, setTrades]   = useState([])
+  const [trades, setTrades]   = useState<Trade[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter]   = useState('ALL')
+  const [filter, setFilter]   = useState<'ALL' | 'BUY' | 'SELL'>('ALL')
 
   useEffect(() => {
     if (!user) return
     supabase.from('trades').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-      .then(({ data }) => { setTrades(data ?? []); setLoading(false) })
+      .then(({ data }) => { setTrades((data as Trade[]) ?? []); setLoading(false) })
   }, [user])
 
   const filtered = filter === 'ALL' ? trades : trades.filter(t => t.type === filter)
@@ -32,7 +32,7 @@ export default function History() {
 
       {/* Filter tabs */}
       <div className="flex gap-2">
-        {['ALL','BUY','SELL'].map(f => (
+        {(['ALL','BUY','SELL'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
               filter === f ? 'bg-orange-500 text-white border-orange-500' : 'text-muted-foreground hover:text-foreground border-transparent'

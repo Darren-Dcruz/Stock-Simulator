@@ -1,5 +1,5 @@
-// @ts-nocheck
 import { useState } from 'react'
+import type { NewsArticle } from '@/types'
 import { useMarketNews } from '@/hooks/useMarketNews'
 import { Skeleton } from '@/components/ui/skeleton'
 import { hasFinnhubKey } from '@/api/stockService'
@@ -12,7 +12,7 @@ const NEWS_TABS = [
   { id: 'merger',  label: 'M&A'       },
 ]
 
-function timeAgo(unixSec) {
+function timeAgo(unixSec: number) {
   const diff = Math.floor(Date.now() / 1000) - unixSec
   if (diff < 60)   return `${diff}s ago`
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
@@ -20,7 +20,7 @@ function timeAgo(unixSec) {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-function NewsCard({ article }) {
+function NewsCard({ article }: { article: NewsArticle }) {
   return (
     <a
       href={article.url}
@@ -34,7 +34,7 @@ function NewsCard({ article }) {
             src={article.image}
             alt=""
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={e => { e.target.style.display = 'none' }}
+            onError={e => { e.currentTarget.style.display = 'none' }}
           />
         </div>
       )}

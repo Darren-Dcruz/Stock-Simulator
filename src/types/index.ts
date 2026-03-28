@@ -42,7 +42,7 @@ export interface Trade {
   symbol: string;
   ticker: string;
   name: string;
-  side: 'BUY' | 'SELL';
+  type: 'BUY' | 'SELL';
   quantity: number;
   price: number;
   total: number;
@@ -80,4 +80,60 @@ export interface PriceAlert {
   direction: 'above' | 'below';
   triggered: boolean;
   created_at: string;
+}
+
+/** A news article returned from Finnhub */
+export interface NewsArticle {
+  id?: number;
+  headline: string;
+  summary?: string;
+  url: string;
+  source: string;
+  datetime: number;
+  image?: string;
+  category?: string;
+}
+
+/** A row in the user's watchlist */
+export interface WatchlistItem {
+  id: string;
+  user_id: string;
+  symbol: string;
+  name: string;
+  added_at: string;
+}
+
+/** A row from the leaderboard view */
+export interface LeaderboardRow {
+  id: string;
+  username: string | null;
+  cash_balance: number;
+  holdings_value: number;
+  total_value: number;
+}
+
+/** Company profile data from Finnhub */
+export interface FinnhubProfile {
+  name?: string;
+  finnhubIndustry?: string;
+  exchange?: string;
+  ipo?: string;
+  marketCapitalization?: number;
+  weburl?: string;
+  logo?: string;
+  country?: string;
+  currency?: string;
+}
+
+/** Result of SMA trend analysis */
+export interface TrendResult {
+  trend: 'Uptrend' | 'Downtrend' | 'Neutral';
+  sma20: number | null;
+  sma50: number | null;
+}
+
+/** A message in the AI chat panel */
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }

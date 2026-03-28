@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { LiveInstrument } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,9 @@ import { useToast } from '@/components/ui/use-toast'
 import { US_INDICES, getMarketStatus } from '@/api/stockService'
 import { useMarketData } from '@/lib/MarketDataContext'
 
-const TABS = [
+type TabId = 'stocks' | 'etfs' | 'crypto' | 'forex' | 'commodities'
+
+const TABS: { id: TabId; label: string; emoji: string }[] = [
   { id: 'stocks',      label: 'Stocks',       emoji: '📈' },
   { id: 'etfs',        label: 'ETFs',         emoji: '📊' },
   { id: 'crypto',      label: 'Crypto',       emoji: '₿'  },
@@ -19,7 +21,7 @@ const TABS = [
   { id: 'commodities', label: 'Commodities',  emoji: '🛢' },
 ]
 
-function fmtPrice(price, assetType) {
+function fmtPrice(price: number, assetType: string) {
   if (assetType === 'forex') {
     return Number(price).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })
   }
@@ -63,7 +65,17 @@ function IndicesBar() {
   )
 }
 
-function AssetTable({ assets, isLoading, assetType, onWatch, onTrade, onDetails, showDetails = true }) {
+interface AssetTableProps {
+  assets: LiveInstrument[]
+  isLoading: boolean
+  assetType: string
+  onWatch: (asset: LiveInstrument) => void
+  onTrade: (asset: LiveInstrument) => void
+  onDetails: (asset: LiveInstrument) => void
+  showDetails?: boolean
+}
+
+function AssetTable({ assets, isLoading, assetType, onWatch, onTrade, onDetails, showDetails = true }: AssetTableProps) {
   const isCrypto = assetType === 'crypto'
   const isForex  = assetType === 'forex'
 
@@ -135,10 +147,10 @@ function AssetTable({ assets, isLoading, assetType, onWatch, onTrade, onDetails,
 }
 
 export default function Market() {
-  const [tab, setTab]       = useState('stocks')
+  const [tab, setTab]       = useState<TabId>('stocks')
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState('all')   // 'all' | 'gainers' | 'losers'
-  const [sort, setSort]     = useState('default') // 'default' | 'name' | 'price_asc' | 'price_desc' | 'change_asc' | 'change_desc'
+  const [filter, setFilter] = useState('all')
+  const [sort, setSort]     = useState('default')
   const { user } = useAuth()
   const navigate  = useNavigate()
   const { toast } = useToast()
@@ -147,9 +159,9 @@ export default function Market() {
   const loadStocks = mktLoading, loadETFs = mktLoading, loadCrypto = mktLoading
   const loadForex  = mktLoading, loadCommod = mktLoading
 
-  async function addWatch(asset) {
+  async function addWatch(asset: LiveInstrument) {
     const { error } = await supabase.from('watchlists').upsert(
-      { user_id: user.id, symbol: asset.ticker, name: asset.name },
+      { user_id: user!.id, symbol: asset.ticker, name: asset.name },
       { onConflict: 'user_id,symbol' }
     )
     if (error) toast({ title: 'Already in watchlist', variant: 'destructive' })
@@ -157,16 +169,16 @@ export default function Market() {
   }
 
   const tabData = {
-    stocks:      { assets: stocks,      loading: loadStocks,  type: 'stock'     },
-    etfs:        { assets: etfs,        loading: loadETFs,    type: 'etf'       },
-    crypto:      { assets: crypto,      loading: loadCrypto,  type: 'crypto'    },
-    forex:       { assets: forex,       loading: loadForex,   type: 'forex'     },
-    commodities: { assets: commodities, loading: loadCommod,  type: 'commodity' },
-  }
+    stocks:      { assets: stocks      ?? [], loading: loadStocks,  type: 'stock'     },
+    etfs:        { assets: etfs        ?? [], loading: loadETFs,    type: 'etf'       },
+    crypto:      { assets: crypto      ?? [], loading: loadCrypto,  type: 'crypto'    },
+    forex:       { assets: forex       ?? [], loading: loadForex,   type: 'forex'     },
+    commodities: { assets: commodities ?? [], loading: loadCommod,  type: 'commodity' },
+  } satisfies Record<TabId, { assets: LiveInstrument[]; loading: boolean; type: string }>
   const current = tabData[tab]
 
   const filteredAssets = useMemo(() => {
-    let list = current.assets ?? []
+    let list: LiveInstrument[] = current.assets ?? []
     if (search.trim()) {
       const q = search.trim().toLowerCase()
       list = list.filter(a => a.ticker.toLowerCase().includes(q) || a.name.toLowerCase().includes(q))

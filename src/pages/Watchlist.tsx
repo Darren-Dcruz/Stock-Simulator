@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { WatchlistItem } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useMarketData } from '@/lib/MarketDataContext'
@@ -9,27 +9,27 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { TrendingUp, TrendingDown, Trash2, ArrowRight } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
-function fmt(n) {
+function fmt(n: number) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export default function Watchlist() {
   const { user } = useAuth()
   const { allLive: stocks } = useMarketData()
-  const [items, setItems]     = useState([])
+  const [items, setItems]     = useState<WatchlistItem[]>([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { toast } = useToast()
 
   async function load() {
-    const { data } = await supabase.from('watchlists').select('*').eq('user_id', user.id).order('added_at', { ascending: false })
-    setItems(data ?? [])
+    const { data } = await supabase.from('watchlists').select('*').eq('user_id', user!.id).order('added_at', { ascending: false })
+    setItems((data as WatchlistItem[]) ?? [])
     setLoading(false)
   }
 
   useEffect(() => { if (user) load() }, [user])
 
-  async function remove(id, symbol) {
+  async function remove(id: string, symbol: string) {
     await supabase.from('watchlists').delete().eq('id', id)
     setItems(prev => prev.filter(i => i.id !== id))
     toast({ title: `${symbol} removed from watchlist` })

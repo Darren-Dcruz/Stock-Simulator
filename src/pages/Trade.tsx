@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import type { Holding } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
-import { supabase } from '@/lib/supabase'  // still used for holding fetch on mount
+import { supabase } from '@/lib/supabase'
 import { executeTrade } from '@/lib/tradeService'
 import { ALL_INSTRUMENTS, TRACKED_STOCKS, TRACKED_ETFS, TRACKED_CRYPTO, TRACKED_FOREX, TRACKED_COMMODITIES } from '@/api/stockService'
 import { useMarketData } from '@/lib/MarketDataContext'
@@ -15,7 +15,7 @@ import { TrendingUp, TrendingDown, ArrowRight, Loader2, DollarSign } from 'lucid
 import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 
-function fmtPrice(price, assetType) {
+function fmtPrice(price: number, assetType: string | undefined) {
   if (assetType === 'forex' || (assetType === 'crypto' && price < 1)) {
     return Number(price).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })
   }
@@ -31,7 +31,7 @@ const GROUPS = [
 ]
 
 export default function Trade() {
-  const { symbol: paramSymbol } = useParams()
+  const { symbol: paramSymbol } = useParams<{ symbol: string }>()
   const { user, profile, refreshProfile } = useAuth()
   const { toast }    = useToast()
   const navigate     = useNavigate()
@@ -39,12 +39,12 @@ export default function Trade() {
   const { allLive } = useMarketData()
 
   const [selectedTicker, setSelectedTicker] = useState(paramSymbol ?? '')
-  const [type,      setType]      = useState('BUY')
+  const [type,      setType]      = useState<'BUY' | 'SELL'>('BUY')
   const [qty,       setQty]       = useState('')
   const [byDollar,  setByDollar]  = useState(false)
   const [dollarAmt, setDollarAmt] = useState('')
   const [loading,   setLoading]   = useState(false)
-  const [holding,   setHolding]   = useState(null)
+  const [holding,   setHolding]   = useState<Holding | null>(null)
 
   useEffect(() => { if (paramSymbol) setSelectedTicker(paramSymbol) }, [paramSymbol])
 
@@ -52,14 +52,13 @@ export default function Trade() {
     if (!selectedTicker || !user) return
     supabase.from('holdings')
       .select('*').eq('user_id', user.id).eq('symbol', selectedTicker).single()
-      .then(({ data }) => setHolding(data ?? null))
+      .then(({ data }) => setHolding((data as Holding) ?? null))
   }, [selectedTicker, user])
 
   const meta    = ALL_INSTRUMENTS.find(s => s.ticker === selectedTicker)
   const stock   = allLive.find(s => s.ticker === selectedTicker)
   const price   = stock?.price ?? 0
 
-  // In dollar mode, derive quantity from the dollar amount; otherwise use the qty field
   const computedQty = byDollar && price > 0
     ? parseFloat((parseFloat(dollarAmt) / price).toFixed(6)) || 0
     : parseFloat(qty) || 0
@@ -69,19 +68,19 @@ export default function Trade() {
   async function execute() {
     setLoading(true)
     try {
-      const quantity = computedQty
-      const { holding: updated } = await executeTrade({
-        user, profile, stock, meta, type, quantity, price, holding,
-      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { holding: updated } = await (executeTrade as any)({
+        user, profile, stock, meta, type, quantity: computedQty, price, holding,
+      }) as { holding: Holding }
       await refreshProfile()
       toast({
         title: `${type} order executed!`,
-        description: `${quantity.toFixed(quantity % 1 === 0 ? 0 : 4)} × ${selectedTicker} @ $${fmtPrice(price, meta?.assetType)}`,
+        description: `${computedQty.toFixed(computedQty % 1 === 0 ? 0 : 4)} × ${selectedTicker} @ $${fmtPrice(price, meta?.assetType)}`,
       })
       setQty('')
       setDollarAmt('')
       setHolding(updated)
-    } catch (err) {
+    } catch (err: unknown) {
       toast({ title: 'Trade failed', description: (err as Error).message, variant: 'destructive' })
     }
     setLoading(false)
@@ -158,7 +157,7 @@ export default function Trade() {
             <CardHeader><CardTitle className="text-base">Place Order</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex rounded-lg border p-1 w-fit">
-                {['BUY','SELL'].map(t => (
+                {(['BUY','SELL'] as const).map(t => (
                   <button key={t} onClick={() => setType(t)}
                     className={`px-8 py-2 rounded-md text-sm font-semibold transition-colors ${
                       type === t

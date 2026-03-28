@@ -1,19 +1,19 @@
-// @ts-nocheck
 import { useEffect, useState } from 'react'
+import type { LeaderboardRow } from '@/types'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Trophy } from 'lucide-react'
 
-function fmt(n) {
+function fmt(n: number) {
   return Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
-const MEDALS = { 0: '🥇', 1: '🥈', 2: '🥉' }
+const MEDALS: Record<number, string> = { 0: '🥇', 1: '🥈', 2: '🥉' }
 
 export default function Leaderboard() {
   const { user } = useAuth()
-  const [rows, setRows]       = useState([])
+  const [rows, setRows]       = useState<LeaderboardRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function Leaderboard() {
       .select('id, username, cash_balance, holdings_value, total_value')
       .order('total_value', { ascending: false })
       .limit(50)
-      .then(({ data }) => { setRows(data ?? []); setLoading(false) })
+      .then(({ data }) => { setRows((data as LeaderboardRow[]) ?? []); setLoading(false) })
   }, [])
 
   return (

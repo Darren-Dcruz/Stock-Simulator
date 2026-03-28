@@ -1,5 +1,5 @@
 // No API key here — all Finnhub calls go through /api/finnhub (server-side proxy)
-import type { Instrument, LiveInstrument, Candle, Quote } from '@/types'
+import type { Instrument, LiveInstrument, Candle, Quote, NewsArticle, FinnhubProfile } from '@/types'
 
 // ─── Stocks ─────────────────────────────────────────────────────────────────
 export const TRACKED_STOCKS: Instrument[] = [
@@ -192,17 +192,17 @@ export async function fetchCandles(finnhubSymbol: string, days = 30): Promise<Ca
   }));
 }
 
-export async function fetchProfile(finnhubSymbol: string): Promise<unknown> {
-  return get(`/stock/profile2?symbol=${finnhubSymbol}`);
+export async function fetchProfile(finnhubSymbol: string): Promise<FinnhubProfile> {
+  return get(`/stock/profile2?symbol=${finnhubSymbol}`) as Promise<FinnhubProfile>;
 }
 
 /** Fetch market news (general, forex, crypto, merger) */
-export async function fetchMarketNews(category = 'general'): Promise<unknown[]> {
+export async function fetchMarketNews(category = 'general'): Promise<NewsArticle[]> {
   const articles = await get(`/news?category=${category}`);
   if (!Array.isArray(articles)) return [];
   return (articles as Array<Record<string, unknown>>)
     .filter(a => a.headline && a.url)
-    .slice(0, 24);
+    .slice(0, 24) as unknown as NewsArticle[];
 }
 
 async function fetchOne(inst: Instrument): Promise<LiveInstrument> {
