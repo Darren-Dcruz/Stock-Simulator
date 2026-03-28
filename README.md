@@ -15,34 +15,6 @@
 
 ---
 
-## 📸 Screenshots
-
-> **Dashboard — Portfolio overview with live market data**
-
-![Dashboard](screenshots/dashboard.png)
-
-> **Market — 5 asset classes with live prices and screener**
-
-![Market](screenshots/market.png)
-
-> **Stock Detail — Interactive charts, trend analysis & price alerts**
-
-![Stock Detail](screenshots/stock-detail.png)
-
-> **Portfolio — Holdings with live P&L and allocation chart**
-
-![Portfolio](screenshots/portfolio.png)
-
-> **AI Market Analyst — Powered by Llama 3.3 (Groq)**
-
-![AI Chat](screenshots/ai-chat.png)
-
-> **Leaderboard — Ranked by total portfolio value**
-
-![Leaderboard](screenshots/leaderboard.png)
-
----
-
 ## ✨ Features
 
 ### 🏦 Trading & Portfolio
