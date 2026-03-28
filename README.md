@@ -10,6 +10,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel)](https://vercel.com)
 [![PWA](https://img.shields.io/badge/PWA-Installable-5A0FC8?style=for-the-badge&logo=pwa)](https://stocksim-academy.vercel.app)
+[![CI](https://img.shields.io/github/actions/workflow/status/Darren-Dcruz/Stock-Simulator/ci.yml?style=for-the-badge&label=CI)](https://github.com/Darren-Dcruz/Stock-Simulator/actions)
 
 *A full-stack stock market simulator with live prices, AI analysis, portfolio benchmarking, fractional shares, price alert emails, and a real-time leaderboard.*
 
@@ -45,7 +46,7 @@
 | Feature | Description |
 |---|---|
 | **Price Alerts** | Set above/below target alerts on any instrument |
-| **Email Notifications** | Triggered alerts send email via Resend (Vercel Cron, runs daily) |
+| **Email Notifications** | Triggered alerts send email via Resend (Vercel Cron, every 5 min on Pro / daily on Hobby) |
 | **Watchlist** | Save any asset and monitor live prices in one place |
 | **Auto Alert Checking** | Alerts evaluated on every live price refresh (every 2 min) |
 
@@ -59,7 +60,8 @@
 ### 🏆 Social & Competition
 | Feature | Description |
 |---|---|
-| **Leaderboard** | Ranked by **total portfolio value** (cash + holdings) — not just cash balance |
+| **Leaderboard** | Ranked by **total portfolio value** (cash + holdings) — usernames shown with ID fallback |
+| **Username Prompt** | Dashboard prompts users to set a display name if not yet configured |
 | **Multi-user** | Full auth via Supabase — each user has their own isolated portfolio |
 
 ### 🎨 UI & UX
@@ -71,6 +73,7 @@
 | **Loading Skeletons** | Smooth loading states across charts and price displays |
 | **Mobile Friendly** | Responsive sidebar with scroll-to-top on navigation |
 | **PWA — Installable** | Install as a native-like app on desktop or mobile — works offline for cached assets |
+| **Error Boundary** | Global error boundary catches crashes and shows an inline retry UI per-page |
 
 ---
 
@@ -89,6 +92,7 @@
 | **Email** | Resend (transactional alert emails) |
 | **Logo CDN** | Financial Modeling Prep · CoinGecko |
 | **Testing** | Vitest + @testing-library/react (18 tests) |
+| **CI** | GitHub Actions — typecheck · lint · test · build on every push |
 | **PWA** | vite-plugin-pwa + Workbox (cache-first static, network-first API) |
 | **Deployment** | Vercel (SPA + Serverless Functions + Cron Jobs) |
 
@@ -112,7 +116,7 @@ All tables defined in [`supabase/schema.sql`](supabase/schema.sql). Run once in 
 
 | Table | Purpose |
 |---|---|
-| `profiles` | User accounts with virtual balance (default: $1,000,000) |
+| `profiles` | User accounts with virtual balance (default: $1,000,000) and username |
 | `holdings` | Current positions per user with quantity (supports fractional) & average buy price |
 | `trades` | Complete trade history (BUY / SELL) |
 | `watchlists` | Saved assets per user |
@@ -171,6 +175,9 @@ npm run dev
 
 # 6. Run tests
 npm test
+
+# 7. Typecheck
+npm run typecheck
 ```
 
 Open [http://localhost:5173](http://localhost:5173)
@@ -201,7 +208,9 @@ Set these environment variables in **Vercel → Settings → Environment Variabl
 
 > **Note:** `FINNHUB_KEY` has no `VITE_` prefix — it is never bundled into the client. All Finnhub requests go through the `/api/finnhub` serverless proxy.
 
-> **Cron:** Price alert emails run once daily at 09:00 UTC (Vercel Hobby plan limit). Upgrade to Pro for `*/5 * * * *` (every 5 min).
+> **Cron:** Price alert emails run every 5 min (`*/5 * * * *`) — requires Vercel Pro. On Hobby plan, change to `0 9 * * *` (daily at 9am UTC).
+
+> **GitHub Secrets:** Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to your GitHub repository secrets for the CI build step to pass.
 
 ---
 
@@ -210,29 +219,34 @@ Set these environment variables in **Vercel → Settings → Environment Variabl
 ```
 src/
 ├── api/
-│   └── stockService.ts     # Finnhub data fetching via /api/finnhub proxy
+│   └── stockService.ts       # Finnhub data fetching via /api/finnhub proxy
 ├── components/
-│   ├── AiChatPanel.tsx     # Floating AI chat panel
-│   ├── OnboardingModal.tsx # 3-step first-time user tour
-│   ├── PwaInstallButton.tsx# PWA install prompt button
-│   ├── AssetLogo.tsx       # Company logo with fallback
-│   └── ui/                 # shadcn/ui primitives
-├── hooks/                  # React Query data hooks
+│   ├── AiChatPanel.tsx       # Floating AI chat panel
+│   ├── ErrorBoundary.tsx     # Global error boundary (wraps App + each route)
+│   ├── OnboardingModal.tsx   # 3-step first-time user tour
+│   ├── PwaInstallButton.tsx  # PWA install prompt button
+│   ├── AssetLogo.tsx         # Company logo with fallback
+│   └── ui/                   # shadcn/ui primitives
+├── hooks/                    # React Query data hooks
 ├── lib/
-│   ├── alertService.ts     # Price alert CRUD + checking
-│   ├── tradeService.ts     # Atomic trade execution with rollback
-│   ├── MarketDataContext.tsx# Unified live price provider
-│   └── supabase.ts         # Supabase client
-├── pages/                  # Route-level page components
+│   ├── alertService.ts       # Price alert CRUD + checking (fully typed)
+│   ├── tradeService.ts       # Atomic trade execution with rollback (fully typed)
+│   ├── AuthContext.tsx       # Auth state + typed context
+│   ├── MarketDataContext.tsx # Unified live price provider (typed)
+│   └── supabase.ts           # Supabase client
+├── pages/                    # Route-level page components
 ├── types/
-│   └── index.ts            # Core TypeScript types (Instrument, Quote, Trade…)
-└── Layout.tsx              # App shell with sidebar navigation
+│   └── index.ts              # Core TypeScript types (Instrument, Quote, Trade…)
+└── Layout.tsx                # App shell with sidebar navigation
 api/
-├── chat.js                 # Vercel serverless function → Groq AI
-├── finnhub.js              # Vercel serverless function → Finnhub proxy (rate-limited)
-└── check-alerts.ts         # Vercel Cron → check price alerts + send emails via Resend
+├── chat.js                   # Vercel serverless function → Groq AI
+├── finnhub.js                # Vercel serverless function → Finnhub proxy (CORS-locked)
+└── check-alerts.ts           # Vercel Cron → check price alerts + send emails via Resend
+.github/
+└── workflows/
+    └── ci.yml                # CI: typecheck → lint → test → build
 supabase/
-└── schema.sql              # Full database schema + RLS policies
+└── schema.sql                # Full database schema + RLS policies
 ```
 
 ---

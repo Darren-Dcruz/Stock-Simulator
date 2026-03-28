@@ -1,7 +1,8 @@
 // No API key here — all Finnhub calls go through /api/finnhub (server-side proxy)
+import type { Instrument, LiveInstrument, Candle, Quote } from '@/types'
 
 // ─── Stocks ─────────────────────────────────────────────────────────────────
-export const TRACKED_STOCKS = [
+export const TRACKED_STOCKS: Instrument[] = [
   { symbol: 'AAPL',  ticker: 'AAPL',  name: 'Apple Inc.',            icon: '🍎', logo: 'https://financialmodelingprep.com/image-stock/AAPL.png',  sector: 'Technology', assetType: 'stock' },
   { symbol: 'MSFT',  ticker: 'MSFT',  name: 'Microsoft Corp.',       icon: '💻', logo: 'https://financialmodelingprep.com/image-stock/MSFT.png',  sector: 'Technology', assetType: 'stock' },
   { symbol: 'GOOGL', ticker: 'GOOGL', name: 'Alphabet Inc.',         icon: '🔍', logo: 'https://financialmodelingprep.com/image-stock/GOOGL.png', sector: 'Technology', assetType: 'stock' },
@@ -15,7 +16,7 @@ export const TRACKED_STOCKS = [
 ];
 
 // ─── ETFs ────────────────────────────────────────────────────────────────────
-export const TRACKED_ETFS = [
+export const TRACKED_ETFS: Instrument[] = [
   { symbol: 'SPY',  ticker: 'SPY',  name: 'SPDR S&P 500 ETF Trust',           icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/SPY.png',  sector: 'Broad Market', assetType: 'etf' },
   { symbol: 'QQQ',  ticker: 'QQQ',  name: 'Invesco QQQ Trust (NASDAQ-100)',   icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/QQQ.png',  sector: 'Technology',   assetType: 'etf' },
   { symbol: 'TLT',  ticker: 'TLT',  name: 'iShares 20+ Year Treasury ETF',   icon: '📊', logo: 'https://financialmodelingprep.com/image-stock/TLT.png',  sector: 'Bonds',        assetType: 'etf' },
@@ -25,7 +26,7 @@ export const TRACKED_ETFS = [
 ];
 
 // ─── Crypto ──────────────────────────────────────────────────────────────────
-export const TRACKED_CRYPTO = [
+export const TRACKED_CRYPTO: Instrument[] = [
   { symbol: 'BINANCE:BTCUSDT', ticker: 'BTC', name: 'Bitcoin',   icon: '₿',  logo: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',         sector: 'Crypto', assetType: 'crypto' },
   { symbol: 'BINANCE:ETHUSDT', ticker: 'ETH', name: 'Ethereum',  icon: '⟠',  logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',       sector: 'Crypto', assetType: 'crypto' },
   { symbol: 'BINANCE:BNBUSDT', ticker: 'BNB', name: 'BNB',       icon: '🔶', logo: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',   sector: 'Crypto', assetType: 'crypto' },
@@ -35,7 +36,7 @@ export const TRACKED_CRYPTO = [
 ];
 
 // ─── Forex ───────────────────────────────────────────────────────────────────
-export const TRACKED_FOREX = [
+export const TRACKED_FOREX: Instrument[] = [
   { symbol: 'OANDA:EUR_USD', ticker: 'EUR/USD', name: 'Euro / US Dollar',              icon: '💱', sector: 'Forex', assetType: 'forex' },
   { symbol: 'OANDA:GBP_USD', ticker: 'GBP/USD', name: 'British Pound / US Dollar',    icon: '💱', sector: 'Forex', assetType: 'forex' },
   { symbol: 'OANDA:USD_JPY', ticker: 'USD/JPY', name: 'US Dollar / Japanese Yen',     icon: '💱', sector: 'Forex', assetType: 'forex' },
@@ -45,7 +46,7 @@ export const TRACKED_FOREX = [
 ];
 
 // ─── Commodities (via ETFs) ───────────────────────────────────────────────────
-export const TRACKED_COMMODITIES = [
+export const TRACKED_COMMODITIES: Instrument[] = [
   { symbol: 'GLD',  ticker: 'GLD',  name: 'Gold (SPDR Gold Shares ETF)',         icon: '🥇', sector: 'Metals',    assetType: 'commodity' },
   { symbol: 'SLV',  ticker: 'SLV',  name: 'Silver (iShares Silver Trust)',        icon: '🥈', sector: 'Metals',    assetType: 'commodity' },
   { symbol: 'USO',  ticker: 'USO',  name: 'Crude Oil (US Oil Fund ETF)',          icon: '🛢', sector: 'Energy',    assetType: 'commodity' },
@@ -129,8 +130,8 @@ export function getMarketStatus() {
 }
 
 /** Generate a simulated price history for demo mode */
-export function generateMockCandles(symbol, days) {
-  const base = MOCK_PRICES[symbol]?.price ?? 100;
+export function generateMockCandles(symbol: string, days: number): Candle[] {
+  const base = MOCK_PRICES[symbol as keyof typeof MOCK_PRICES]?.price ?? 100;
   let seed = String(symbol).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   function rand() {
     seed = (seed * 1103515245 + 12345) & 0x7fffffff;
@@ -153,7 +154,7 @@ export function generateMockCandles(symbol, days) {
 
 export function hasFinnhubKey() { return true; }
 
-async function get(path) {
+async function get(path: string): Promise<unknown> {
   // Split "/quote?symbol=AAPL" into endpoint "/quote" and params "symbol=AAPL"
   const qIdx = path.indexOf('?');
   const endpoint = qIdx === -1 ? path : path.slice(0, qIdx);
@@ -164,8 +165,8 @@ async function get(path) {
   return res.json();
 }
 
-export async function fetchQuote(finnhubSymbol) {
-  const q = await get(`/quote?symbol=${finnhubSymbol}`);
+export async function fetchQuote(finnhubSymbol: string): Promise<Quote> {
+  const q = await get(`/quote?symbol=${finnhubSymbol}`) as Record<string, number>;
   if (!q.c || q.c === 0) throw new Error(`No data for ${finnhubSymbol}`);
   return {
     price:         q.c,
@@ -178,45 +179,51 @@ export async function fetchQuote(finnhubSymbol) {
   };
 }
 
-export async function fetchCandles(finnhubSymbol, days = 30) {
+export async function fetchCandles(finnhubSymbol: string, days = 30): Promise<Candle[]> {
   const to   = Math.floor(Date.now() / 1000);
   const from = to - days * 86400;
-  const data = await get(`/stock/candle?symbol=${finnhubSymbol}&resolution=D&from=${from}&to=${to}`);
+  const data = await get(`/stock/candle?symbol=${finnhubSymbol}&resolution=D&from=${from}&to=${to}`) as {
+    s: string; t?: number[]; o?: number[]; h?: number[]; l?: number[]; c?: number[]; v?: number[];
+  };
   if (data.s !== 'ok' || !data.t) return [];
-  return data.t.map((ts, i) => ({
+  return data.t.map((ts: number, i: number) => ({
     date:   new Date(ts * 1000).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-    open:   data.o[i], high: data.h[i], low: data.l[i], close: data.c[i], volume: data.v[i],
+    open: data.o![i], high: data.h![i], low: data.l![i], close: data.c![i], volume: data.v![i],
   }));
 }
 
-export async function fetchProfile(finnhubSymbol) {
+export async function fetchProfile(finnhubSymbol: string): Promise<unknown> {
   return get(`/stock/profile2?symbol=${finnhubSymbol}`);
 }
 
 /** Fetch market news (general, forex, crypto, merger) */
-export async function fetchMarketNews(category = 'general') {
+export async function fetchMarketNews(category = 'general'): Promise<unknown[]> {
   const articles = await get(`/news?category=${category}`);
   if (!Array.isArray(articles)) return [];
-  return articles
+  return (articles as Array<Record<string, unknown>>)
     .filter(a => a.headline && a.url)
     .slice(0, 24);
 }
 
-async function fetchOne(inst) {
+async function fetchOne(inst: Instrument): Promise<LiveInstrument> {
   try {
     const q = await fetchQuote(inst.symbol);
     return { ...inst, ...q };
   } catch {
-    return { ...inst, ...(MOCK_PRICES[inst.symbol] ?? { price: 0, change: 0, changeAmount: 0, high: 0, low: 0, open: 0, previousClose: 0 }), isMock: true };
+    return {
+      ...inst,
+      ...(MOCK_PRICES[inst.symbol as keyof typeof MOCK_PRICES] ?? { price: 0, change: 0, changeAmount: 0, high: 0, low: 0, open: 0, previousClose: 0 }),
+      isMock: true,
+    };
   }
 }
 
 /** Fetch a list sequentially with a small delay between each to avoid rate-limit spikes */
-async function fetchSequential(list: typeof TRACKED_STOCKS, delayMs = 120) {
-  const results = [];
+async function fetchSequential(list: Instrument[], delayMs = 120): Promise<LiveInstrument[]> {
+  const results: LiveInstrument[] = [];
   for (const inst of list) {
     results.push(await fetchOne(inst));
-    await new Promise(r => setTimeout(r, delayMs));
+    await new Promise<void>(r => setTimeout(r, delayMs));
   }
   return results;
 }

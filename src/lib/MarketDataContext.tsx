@@ -1,17 +1,28 @@
-import { createContext, useContext, useEffect } from 'react'
+import { createContext, useContext, useEffect, type ReactNode } from 'react'
 import { useStockData, useETFData, useCryptoData, useForexData, useCommodityData } from '@/hooks/useStockData'
 import { useAuth } from '@/lib/AuthContext'
 import { useToast } from '@/components/ui/use-toast'
 import { checkAlerts } from '@/lib/alertService'
+import type { LiveInstrument } from '@/types'
 
-const MarketDataContext = createContext(null)
+interface MarketDataContextValue {
+  allLive: LiveInstrument[]
+  stocks:      LiveInstrument[] | undefined
+  etfs:        LiveInstrument[] | undefined
+  crypto:      LiveInstrument[] | undefined
+  forex:       LiveInstrument[] | undefined
+  commodities: LiveInstrument[] | undefined
+  isLoading: boolean
+}
+
+const MarketDataContext = createContext<MarketDataContextValue | null>(null)
 
 /**
  * Single provider that fetches all 5 asset classes once at the app level.
  * All pages share the same React Query cache — no duplicate Finnhub calls.
  * Also checks price alerts each time live data refreshes.
  */
-export function MarketDataProvider({ children }) {
+export function MarketDataProvider({ children }: { children: ReactNode }) {
   const { data: stocks,      isLoading: loadStocks }  = useStockData()
   const { data: etfs,        isLoading: loadETFs }    = useETFData()
   const { data: crypto,      isLoading: loadCrypto }  = useCryptoData()
@@ -20,7 +31,7 @@ export function MarketDataProvider({ children }) {
   const { user } = useAuth()
   const { toast } = useToast()
 
-  const allLive = [
+  const allLive: LiveInstrument[] = [
     ...(stocks      ?? []),
     ...(etfs        ?? []),
     ...(crypto      ?? []),
@@ -49,7 +60,7 @@ export function MarketDataProvider({ children }) {
   )
 }
 
-export function useMarketData() {
+export function useMarketData(): MarketDataContextValue {
   const ctx = useContext(MarketDataContext)
   if (!ctx) throw new Error('useMarketData must be used inside <MarketDataProvider>')
   return ctx

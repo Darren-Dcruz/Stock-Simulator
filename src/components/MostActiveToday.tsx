@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { memo } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';

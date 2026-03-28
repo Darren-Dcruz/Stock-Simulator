@@ -1,11 +1,23 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import type { User, AuthError, AuthResponse, SignUpWithPasswordCredentials } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import type { Profile } from '@/types'
 
-const AuthContext = createContext({})
+interface AuthContextValue {
+  user: User | null
+  profile: Profile | null
+  loading: boolean
+  signIn: (email: string, password: string) => ReturnType<typeof supabase.auth.signInWithPassword>
+  signUp: (email: string, password: string, username: string) => Promise<AuthResponse>
+  signOut: () => Promise<{ error: AuthError | null }>
+  refreshProfile: () => Promise<void>
+}
 
-export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
-  const [profile, setProfile] = useState(null)
+const AuthContext = createContext<AuthContextValue>({} as AuthContextValue)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser]       = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,21 +34,21 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function loadProfile(id) {
+  async function loadProfile(id: string) {
     const { data } = await supabase.from('profiles').select('*').eq('id', id).single()
-    setProfile(data)
+    setProfile(data as Profile)
     setLoading(false)
   }
 
-  async function signIn(email, password) {
+  async function signIn(email: string, password: string) {
     return supabase.auth.signInWithPassword({ email, password })
   }
-  async function signUp(email, password, username) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (!error && data.user) {
-      await supabase.from('profiles').update({ username }).eq('id', data.user.id)
+  async function signUp(email: string, password: string, username: string): Promise<AuthResponse> {
+    const result = await supabase.auth.signUp({ email, password } satisfies SignUpWithPasswordCredentials)
+    if (!result.error && result.data.user) {
+      await supabase.from('profiles').update({ username }).eq('id', result.data.user.id)
     }
-    return { data, error }
+    return result
   }
   async function signOut() {
     return supabase.auth.signOut()
