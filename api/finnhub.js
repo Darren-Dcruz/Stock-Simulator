@@ -1,36 +1,35 @@
 /**
  * Finnhub API proxy — keeps FINNHUB_KEY server-side only.
- * Applies an in-memory token bucket: 60 tokens/min (Finnhub free-tier limit).
+ *
+ * NOTE: Vercel Functions are stateless — each invocation may run in a fresh
+ * process, so in-memory rate limiting (token buckets, counters) does not work.
+ * Rate limiting is delegated to the client: stockService.ts uses fetchSequential()
+ * with a 120 ms delay between requests, which keeps well under Finnhub's 60 req/min.
  *
  * Usage: GET /api/finnhub?path=/quote&symbol=AAPL
  * The `path` param is the Finnhub v1 endpoint path.
- * All other query params are forwarded as-is.
+ * All other query params are forwarded as-is to Finnhub.
  */
 
-// ── In-memory token bucket (60 req/min) ─────────────────────────────────────
-let tokens   = 60
-let lastTime = Date.now()
-
-function consumeToken() {
-  const now     = Date.now()
-  const elapsed = (now - lastTime) / 1000          // seconds since last call
-  tokens        = Math.min(60, tokens + elapsed * 1) // refill 1/sec
-  lastTime      = now
-  if (tokens < 1) return false
-  tokens -= 1
-  return true
-}
+const ALLOWED_ORIGINS = [
+  'https://stocksim-academy.vercel.app',
+  'http://localhost:5173',
+]
 
 export default async function handler(req, res) {
-  // CORS for local dev
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const origin = req.headers.origin || ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+  res.setHeader('Vary', 'Origin')
+
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    return res.status(204).end()
+  }
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
-  }
-
-  if (!consumeToken()) {
-    return res.status(429).json({ error: 'Rate limit exceeded — max 60 req/min' })
   }
 
   const key = process.env.FINNHUB_KEY
@@ -38,16 +37,13 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'FINNHUB_KEY environment variable not set' })
   }
 
-  // Parse incoming query params
-  const base   = 'http://localhost'
-  const url    = new URL(req.url, base)
-  const path   = url.searchParams.get('path')   // e.g. "/quote" or "/stock/candle"
+  const url  = new URL(req.url, 'http://localhost')
+  const path = url.searchParams.get('path')
 
   if (!path) {
     return res.status(400).json({ error: 'Missing required query param: path' })
   }
 
-  // Forward all params except `path`, then append token
   url.searchParams.delete('path')
   url.searchParams.set('token', key)
 
