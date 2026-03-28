@@ -8,8 +8,9 @@ import { useMarketData } from '@/lib/MarketDataContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, ArrowRight, Loader2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowRight, Loader2, DollarSign } from 'lucide-react'
 import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -37,10 +38,12 @@ export default function Trade() {
   const { allLive } = useMarketData()
 
   const [selectedTicker, setSelectedTicker] = useState(paramSymbol ?? '')
-  const [type,    setType]    = useState('BUY')
-  const [qty,     setQty]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const [holding, setHolding] = useState(null)
+  const [type,      setType]      = useState('BUY')
+  const [qty,       setQty]       = useState('')
+  const [byDollar,  setByDollar]  = useState(false)
+  const [dollarAmt, setDollarAmt] = useState('')
+  const [loading,   setLoading]   = useState(false)
+  const [holding,   setHolding]   = useState(null)
 
   useEffect(() => { if (paramSymbol) setSelectedTicker(paramSymbol) }, [paramSymbol])
 
@@ -54,22 +57,31 @@ export default function Trade() {
   const meta    = ALL_INSTRUMENTS.find(s => s.ticker === selectedTicker)
   const stock   = allLive.find(s => s.ticker === selectedTicker)
   const price   = stock?.price ?? 0
-  const total   = (parseFloat(qty) || 0) * price
+
+  // In dollar mode, derive quantity from the dollar amount; otherwise use the qty field
+  const computedQty = byDollar && price > 0
+    ? parseFloat((parseFloat(dollarAmt) / price).toFixed(6)) || 0
+    : parseFloat(qty) || 0
+  const total   = computedQty * price
   const balance = profile?.virtual_balance ?? 0
 
   async function execute() {
     setLoading(true)
     try {
-      const quantity = parseFloat(qty)
+      const quantity = computedQty
       const { holding: updated } = await executeTrade({
         user, profile, stock, meta, type, quantity, price, holding,
       })
       await refreshProfile()
-      toast({ title: `${type} order executed!`, description: `${quantity} × ${selectedTicker} @ $${fmtPrice(price, meta?.assetType)}` })
+      toast({
+        title: `${type} order executed!`,
+        description: `${quantity.toFixed(quantity % 1 === 0 ? 0 : 4)} × ${selectedTicker} @ $${fmtPrice(price, meta?.assetType)}`,
+      })
       setQty('')
+      setDollarAmt('')
       setHolding(updated)
     } catch (err) {
-      toast({ title: 'Trade failed', description: err.message, variant: 'destructive' })
+      toast({ title: 'Trade failed', description: (err as Error).message, variant: 'destructive' })
     }
     setLoading(false)
   }
@@ -133,7 +145,7 @@ export default function Trade() {
               </div>
               {holding && (
                 <div className="mt-4 pt-4 border-t text-sm text-muted-foreground flex gap-6">
-                  <span>You own: <strong className="text-foreground">{holding.quantity} units</strong></span>
+                  <span>You own: <strong className="text-foreground">{holding.quantity % 1 === 0 ? holding.quantity : Number(holding.quantity).toFixed(4)} units</strong></span>
                   <span>Avg cost: <strong className="text-foreground">${fmtPrice(holding.avg_buy_price, meta?.assetType)}</strong></span>
                 </div>
               )}
@@ -156,14 +168,46 @@ export default function Trade() {
                 ))}
               </div>
 
-              <div className="space-y-1.5">
-                <Label>Quantity (units)</Label>
-                <Input type="number" min="0" step="any" placeholder="0" value={qty} onChange={e => setQty(e.target.value)} />
+              {/* Dollar / Units toggle */}
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">
+                  {byDollar ? 'Buy by Dollar Amount' : 'Buy by Units (fractional ok)'}
+                </Label>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Units</span>
+                  <Switch checked={byDollar} onCheckedChange={v => { setByDollar(v); setQty(''); setDollarAmt('') }} />
+                  <DollarSign className="h-3.5 w-3.5" />
+                </div>
               </div>
+
+              {byDollar ? (
+                <div className="space-y-1.5">
+                  <Label>Dollar Amount</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                    <Input
+                      type="number" min="0" step="any" placeholder="100.00"
+                      value={dollarAmt}
+                      onChange={e => setDollarAmt(e.target.value)}
+                      className="pl-7"
+                    />
+                  </div>
+                  {price > 0 && parseFloat(dollarAmt) > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      ≈ {computedQty.toFixed(6)} shares of {selectedTicker}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <Label>Quantity (supports fractional shares)</Label>
+                  <Input type="number" min="0" step="any" placeholder="0.5" value={qty} onChange={e => setQty(e.target.value)} />
+                </div>
+              )}
 
               <div className="rounded-lg bg-muted/50 p-4 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Price per unit</span><span>${fmtPrice(price, meta?.assetType)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Quantity</span><span>{qty || 0}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Quantity</span><span>{computedQty > 0 ? computedQty.toFixed(computedQty % 1 === 0 ? 0 : 6) : 0}</span></div>
                 <div className="flex justify-between font-semibold border-t pt-2 mt-2">
                   <span>{type === 'BUY' ? 'Total Cost' : 'You Receive'}</span>
                   <span className={type === 'BUY' ? 'text-red-500' : 'text-green-500'}>${fmtPrice(total, meta?.assetType)}</span>
@@ -178,9 +222,9 @@ export default function Trade() {
                 className="w-full gap-2 text-white"
                 style={{ backgroundColor: type === 'BUY' ? '#22c55e' : '#ef4444' }}
                 onClick={execute}
-                disabled={loading || !qty || parseFloat(qty) <= 0}
+                disabled={loading || computedQty <= 0 || price === 0}
               >
-                {loading ? 'Processing…' : `${type} ${qty || 0} unit${parseFloat(qty) !== 1 ? 's' : ''}`}
+                {loading ? 'Processing…' : `${type} ${computedQty > 0 ? computedQty.toFixed(computedQty % 1 === 0 ? 0 : 4) : 0} ${computedQty === 1 ? 'unit' : 'units'}`}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </CardContent>
