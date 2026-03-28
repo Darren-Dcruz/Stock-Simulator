@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext'
 import ThemeToggle from '@/components/ThemeToggle'
 import AiChatPanel from '@/components/AiChatPanel'
 import OnboardingModal, { useOnboarding } from '@/components/OnboardingModal'
+import PwaInstallButton from '@/components/PwaInstallButton'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, TrendingUp, Briefcase, ArrowLeftRight,
@@ -63,6 +64,7 @@ function SidebarContent({ onNav, onTakeTour }: { onNav?: () => void; onTakeTour?
             </p>
           </div>
         </div>
+        <PwaInstallButton />
         <ThemeToggle />
         {onTakeTour && (
           <Button
