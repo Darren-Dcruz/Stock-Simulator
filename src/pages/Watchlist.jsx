@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useStockData } from '@/hooks/useStockData'
+import { useMarketData } from '@/lib/MarketDataContext'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TrendingUp, TrendingDown, Trash2, ArrowRight } from 'lucide-react'
@@ -14,7 +14,7 @@ function fmt(n) {
 
 export default function Watchlist() {
   const { user } = useAuth()
-  const { data: stocks } = useStockData()
+  const { allLive: stocks } = useMarketData()
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()

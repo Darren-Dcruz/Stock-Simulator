@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -8,7 +8,7 @@ import { TrendingUp, TrendingDown, BookmarkPlus, ArrowRight } from 'lucide-react
 import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 import { US_INDICES, getMarketStatus } from '@/api/stockService'
-import { useStockData, useETFData, useCryptoData, useForexData, useCommodityData } from '@/hooks/useStockData'
+import { useMarketData } from '@/lib/MarketDataContext'
 
 const TABS = [
   { id: 'stocks',      label: 'Stocks',       emoji: '📈' },
@@ -134,16 +134,17 @@ function AssetTable({ assets, isLoading, assetType, onWatch, onTrade, onDetails,
 }
 
 export default function Market() {
-  const [tab, setTab] = useState('stocks')
+  const [tab, setTab]       = useState('stocks')
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState('all')   // 'all' | 'gainers' | 'losers'
+  const [sort, setSort]     = useState('default') // 'default' | 'name' | 'price_asc' | 'price_desc' | 'change_asc' | 'change_desc'
   const { user } = useAuth()
   const navigate  = useNavigate()
   const { toast } = useToast()
 
-  const { data: stocks,      isLoading: loadStocks }  = useStockData()
-  const { data: etfs,        isLoading: loadETFs }    = useETFData()
-  const { data: crypto,      isLoading: loadCrypto }  = useCryptoData()
-  const { data: forex,       isLoading: loadForex }   = useForexData()
-  const { data: commodities, isLoading: loadCommod }  = useCommodityData()
+  const { stocks, etfs, crypto, forex, commodities, isLoading: mktLoading } = useMarketData()
+  const loadStocks = mktLoading, loadETFs = mktLoading, loadCrypto = mktLoading
+  const loadForex  = mktLoading, loadCommod = mktLoading
 
   async function addWatch(asset) {
     const { error } = await supabase.from('watchlists').upsert(
@@ -162,6 +163,22 @@ export default function Market() {
     commodities: { assets: commodities, loading: loadCommod,  type: 'commodity' },
   }
   const current = tabData[tab]
+
+  const filteredAssets = useMemo(() => {
+    let list = current.assets ?? []
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      list = list.filter(a => a.ticker.toLowerCase().includes(q) || a.name.toLowerCase().includes(q))
+    }
+    if (filter === 'gainers') list = list.filter(a => (a.change ?? 0) >= 0)
+    if (filter === 'losers')  list = list.filter(a => (a.change ?? 0) < 0)
+    if (sort === 'name')         list = [...list].sort((a, b) => a.name.localeCompare(b.name))
+    if (sort === 'price_asc')    list = [...list].sort((a, b) => a.price - b.price)
+    if (sort === 'price_desc')   list = [...list].sort((a, b) => b.price - a.price)
+    if (sort === 'change_asc')   list = [...list].sort((a, b) => a.change - b.change)
+    if (sort === 'change_desc')  list = [...list].sort((a, b) => b.change - a.change)
+    return list
+  }, [current.assets, search, filter, sort])
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
@@ -195,9 +212,39 @@ export default function Market() {
         ))}
       </div>
 
+      {/* Screener controls */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <input
+          type="text"
+          placeholder="Search by ticker or name…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="flex-1 min-w-[180px] rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+        <div className="flex rounded-md border overflow-hidden text-sm">
+          {[['all','All'],['gainers','Gainers'],['losers','Losers']].map(([v, l]) => (
+            <button key={v} onClick={() => setFilter(v)}
+              className={`px-3 py-2 font-medium transition-colors ${filter === v ? 'bg-orange-500 text-white' : 'text-muted-foreground hover:bg-muted'}`}
+            >{l}</button>
+          ))}
+        </div>
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value)}
+          className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="default">Sort: Default</option>
+          <option value="name">Name A–Z</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="change_desc">Change: Best first</option>
+          <option value="change_asc">Change: Worst first</option>
+        </select>
+      </div>
+
       {/* Table */}
       <AssetTable
-        assets={current.assets}
+        assets={filteredAssets}
         isLoading={current.loading}
         assetType={current.type}
         onWatch={addWatch}

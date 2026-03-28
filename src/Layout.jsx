@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '@/lib/AuthContext'
 import ThemeToggle from '@/components/ThemeToggle'
+import AiChatPanel from '@/components/AiChatPanel'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, TrendingUp, Briefcase, ArrowLeftRight,
@@ -91,7 +92,7 @@ export default function Layout() {
             <button className="absolute top-4 right-3 p-1" onClick={() => setOpen(false)}>
               <X className="h-5 w-5" />
             </button>
-            <SidebarContent onNav={() => setOpen(false)} />
+            <SidebarContent onNav={() => { setOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }) }} />
           </aside>
         </div>
       )}
@@ -110,6 +111,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <AiChatPanel />
     </div>
   )
 }

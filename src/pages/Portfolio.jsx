@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useStockData } from '@/hooks/useStockData'
+import { useMarketData } from '@/lib/MarketDataContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -17,7 +17,7 @@ function fmt(n) {
 
 export default function Portfolio() {
   const { user, profile } = useAuth()
-  const { data: stocks } = useStockData()
+  const { allLive: stocks, isLoading: mktLoading } = useMarketData()
   const [holdings, setHoldings] = useState([])
   const [loading, setLoading]   = useState(true)
   const navigate = useNavigate()
@@ -129,7 +129,14 @@ export default function Portfolio() {
           <Card>
             <CardHeader><CardTitle className="text-base">Allocation</CardTitle></CardHeader>
             <CardContent>
-              {enriched.length === 0 ? (
+              {(loading || mktLoading) ? (
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <Skeleton className="w-[160px] h-[160px] rounded-full" />
+                  <div className="w-full space-y-2">
+                    {Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-3 w-full" />)}
+                  </div>
+                </div>
+              ) : enriched.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-6">No holdings</p>
               ) : (
                 <>

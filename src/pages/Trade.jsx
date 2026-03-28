@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'  // still used for holding fetch on mount
+import { executeTrade } from '@/lib/tradeService'
 import { ALL_INSTRUMENTS, TRACKED_STOCKS, TRACKED_ETFS, TRACKED_CRYPTO, TRACKED_FOREX, TRACKED_COMMODITIES } from '@/api/stockService'
-import { useStockData, useETFData, useCryptoData, useForexData, useCommodityData } from '@/hooks/useStockData'
+import { useMarketData } from '@/lib/MarketDataContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowRight, Loader2 } from 'lucide-react'
 import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -33,13 +34,7 @@ export default function Trade() {
   const { toast }    = useToast()
   const navigate     = useNavigate()
 
-  const { data: stocks }      = useStockData()
-  const { data: etfs }        = useETFData()
-  const { data: crypto }      = useCryptoData()
-  const { data: forex }       = useForexData()
-  const { data: commodities } = useCommodityData()
-
-  const allLive = [...(stocks ?? []), ...(etfs ?? []), ...(crypto ?? []), ...(forex ?? []), ...(commodities ?? [])]
+  const { allLive } = useMarketData()
 
   const [selectedTicker, setSelectedTicker] = useState(paramSymbol ?? '')
   const [type,    setType]    = useState('BUY')
@@ -63,42 +58,16 @@ export default function Trade() {
   const balance = profile?.virtual_balance ?? 0
 
   async function execute() {
-    if (!stock || !qty || parseFloat(qty) <= 0) {
-      toast({ title: 'Enter a valid quantity', variant: 'destructive' }); return
-    }
-    if (type === 'BUY' && total > balance) {
-      toast({ title: 'Insufficient balance', variant: 'destructive' }); return
-    }
-    if (type === 'SELL' && (!holding || holding.quantity < parseFloat(qty))) {
-      toast({ title: 'Not enough units to sell', variant: 'destructive' }); return
-    }
     setLoading(true)
     try {
       const quantity = parseFloat(qty)
-      await supabase.from('trades').insert({
-        user_id: user.id, symbol: selectedTicker, name: stock.name,
-        type, quantity, price, total,
+      const { holding: updated } = await executeTrade({
+        user, profile, stock, meta, type, quantity, price, holding,
       })
-      if (type === 'BUY') {
-        if (holding) {
-          const newQty = holding.quantity + quantity
-          const newAvg = (holding.quantity * holding.avg_buy_price + quantity * price) / newQty
-          await supabase.from('holdings').update({ quantity: newQty, avg_buy_price: newAvg, updated_at: new Date() }).eq('id', holding.id)
-        } else {
-          await supabase.from('holdings').insert({ user_id: user.id, symbol: selectedTicker, name: stock.name, quantity, avg_buy_price: price })
-        }
-        await supabase.from('profiles').update({ virtual_balance: balance - total }).eq('id', user.id)
-      } else {
-        const newQty = holding.quantity - quantity
-        if (newQty <= 0) await supabase.from('holdings').delete().eq('id', holding.id)
-        else await supabase.from('holdings').update({ quantity: newQty, updated_at: new Date() }).eq('id', holding.id)
-        await supabase.from('profiles').update({ virtual_balance: balance + total }).eq('id', user.id)
-      }
       await refreshProfile()
       toast({ title: `${type} order executed!`, description: `${quantity} × ${selectedTicker} @ $${fmtPrice(price, meta?.assetType)}` })
       setQty('')
-      const { data } = await supabase.from('holdings').select('*').eq('user_id', user.id).eq('symbol', selectedTicker).single()
-      setHolding(data ?? null)
+      setHolding(updated)
     } catch (err) {
       toast({ title: 'Trade failed', description: err.message, variant: 'destructive' })
     }
@@ -150,7 +119,12 @@ export default function Trade() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold">${fmtPrice(price, meta?.assetType)}</p>
+                  <p className="text-2xl font-bold flex items-center justify-end gap-2">
+                    {price === 0
+                      ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      : `$${fmtPrice(price, meta?.assetType)}`
+                    }
+                  </p>
                   <span className={`inline-flex items-center gap-1 text-sm font-semibold ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {stock.change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {stock.change >= 0 ? '+' : ''}{Number(stock.change).toFixed(2)}%

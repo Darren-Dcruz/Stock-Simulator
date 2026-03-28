@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { TrendingUp, TrendingDown, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useStockData } from '@/hooks/useStockData';
+import { useMarketData } from '@/lib/MarketDataContext';
 import { useNavigate } from 'react-router-dom';
 import AssetLogo from '@/components/AssetLogo';
 
-function StockCard({ stock, onClick }) {
+const StockCard = memo(function StockCard({ stock, onClick }) {
   const isUp = stock.change >= 0;
   const formattedPrice = Number(stock.price).toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -37,7 +38,7 @@ function StockCard({ stock, onClick }) {
       </div>
     </div>
   );
-}
+})
 
 function CardSkeleton() {
   return (
@@ -58,7 +59,8 @@ function CardSkeleton() {
 }
 
 export default function MostActiveToday() {
-  const { data: stocks, isLoading, isFetching, refetch } = useStockData();
+  const { stocks } = useMarketData();
+  const isLoading = !stocks, isFetching = false, refetch = () => {};
   const navigate = useNavigate();
   const isMock = stocks?.[0]?.isMock;
 

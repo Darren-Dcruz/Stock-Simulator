@@ -6,10 +6,12 @@ import { fetchQuote, fetchCandles, fetchProfile, ALL_INSTRUMENTS, MOCK_PRICES, g
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, TrendingUp, TrendingDown, BookmarkPlus, ArrowLeftRight, Globe, Building2 } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, BookmarkPlus, ArrowLeftRight, Globe, Building2, Bell, Trash2 } from 'lucide-react'
 import AssetLogo from '@/components/AssetLogo'
 import { useToast } from '@/components/ui/use-toast'
+import { createAlert, deleteAlert, getUserAlerts } from '@/lib/alertService'
 
 const RANGES = [
   { label: '1W', days: 7   },
@@ -61,6 +63,10 @@ export default function StockDetail() {
   const [profile, setProfile]       = useState(null)
   const [loading, setLoading]       = useState(true)
   const [chartLoading, setChartLoading] = useState(false)
+  const [alerts, setAlerts]         = useState([])
+  const [alertPrice, setAlertPrice] = useState('')
+  const [alertDir, setAlertDir]     = useState('above')
+  const [alertSaving, setAlertSaving] = useState(false)
 
   const meta          = ALL_INSTRUMENTS.find(s => s.ticker === symbol)
   const finnhubSymbol = meta?.symbol ?? symbol
@@ -96,6 +102,34 @@ export default function StockDetail() {
       .catch(() => setCandles(generateMockCandles(finnhubSymbol, range.days)))
       .finally(() => setChartLoading(false))
   }, [range])
+
+  useEffect(() => {
+    if (!user) return
+    getUserAlerts(user.id).then(data => setAlerts(data.filter(a => a.symbol === symbol)))
+  }, [user, symbol])
+
+  async function saveAlert() {
+    if (!alertPrice || !user) return
+    setAlertSaving(true)
+    try {
+      const a = await createAlert({
+        userId: user.id, symbol, name: meta?.name ?? symbol,
+        targetPrice: parseFloat(alertPrice), direction: alertDir,
+      })
+      setAlerts(prev => [a, ...prev])
+      setAlertPrice('')
+      toast({ title: 'Alert set', description: `Alert when ${symbol} goes ${alertDir} $${alertPrice}` })
+    } catch (err) {
+      toast({ title: 'Failed to create alert', description: err.message, variant: 'destructive' })
+    }
+    setAlertSaving(false)
+  }
+
+  async function removeAlert(id) {
+    await deleteAlert(id)
+    setAlerts(prev => prev.filter(a => a.id !== id))
+    toast({ title: 'Alert removed' })
+  }
 
   async function addToWatchlist() {
     if (!user) return
@@ -215,6 +249,56 @@ export default function StockDetail() {
           <StatCard label="Day's Low"   value={`$${fmt(quote.low)}`} />
           <StatCard label="Prev Close"  value={`$${fmt(quote.previousClose)}`} />
         </div>
+      )}
+
+      {/* Price Alerts */}
+      {user && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Bell className="h-4 w-4" /> Price Alerts
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              <div className="flex rounded-md border overflow-hidden text-sm">
+                {['above','below'].map(d => (
+                  <button key={d} onClick={() => setAlertDir(d)}
+                    className={`px-3 py-2 font-medium capitalize transition-colors ${alertDir === d ? 'bg-orange-500 text-white' : 'text-muted-foreground hover:bg-muted'}`}
+                  >{d}</button>
+                ))}
+              </div>
+              <Input
+                type="number" min="0" step="any" placeholder="Target price"
+                value={alertPrice} onChange={e => setAlertPrice(e.target.value)}
+                className="w-36"
+              />
+              <Button
+                onClick={saveAlert}
+                disabled={alertSaving || !alertPrice}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                {alertSaving ? 'Saving…' : 'Set Alert'}
+              </Button>
+            </div>
+            {alerts.length > 0 && (
+              <div className="space-y-2">
+                {alerts.map(a => (
+                  <div key={a.id} className="flex items-center justify-between text-sm rounded-lg border px-3 py-2">
+                    <span>
+                      Notify when <strong>{a.symbol}</strong> goes{' '}
+                      <span className={a.direction === 'above' ? 'text-green-500' : 'text-red-500'}>{a.direction}</span>{' '}
+                      <strong>${Number(a.target_price).toFixed(2)}</strong>
+                    </span>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500" onClick={() => removeAlert(a.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Trend analysis */}

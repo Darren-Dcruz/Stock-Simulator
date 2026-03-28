@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/toaster'
 import { queryClientInstance } from '@/lib/query-client'
 import { AuthProvider, useAuth } from '@/lib/AuthContext'
+import { MarketDataProvider } from '@/lib/MarketDataContext'
 import Layout from '@/Layout'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
@@ -60,7 +61,9 @@ export default function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <AuthProvider>
-            <AppRoutes />
+            <MarketDataProvider>
+              <AppRoutes />
+            </MarketDataProvider>
           </AuthProvider>
           <Toaster />
         </Router>

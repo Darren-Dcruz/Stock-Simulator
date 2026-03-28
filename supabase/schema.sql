@@ -47,14 +47,27 @@ CREATE TABLE IF NOT EXISTS watchlists (
   UNIQUE (user_id, symbol)
 );
 
+-- 5. PRICE ALERTS
+CREATE TABLE IF NOT EXISTS price_alerts (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID        NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  symbol       TEXT        NOT NULL,
+  name         TEXT        NOT NULL,
+  target_price NUMERIC(15,4) NOT NULL,
+  direction    TEXT        NOT NULL CHECK (direction IN ('above', 'below')),
+  triggered    BOOLEAN     NOT NULL DEFAULT FALSE,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
 
-ALTER TABLE profiles   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE holdings   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE trades     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE watchlists ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE holdings     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trades       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE watchlists   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE price_alerts ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: everyone can read (for leaderboard), only owner can update
 CREATE POLICY "profiles_select" ON profiles FOR SELECT USING (auth.uid() IS NOT NULL);
@@ -67,7 +80,10 @@ CREATE POLICY "holdings_all"   ON holdings   FOR ALL USING (auth.uid() = user_id
 CREATE POLICY "trades_all"     ON trades     FOR ALL USING (auth.uid() = user_id);
 
 -- Watchlists: owner only
-CREATE POLICY "watchlists_all" ON watchlists FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "watchlists_all"    ON watchlists   FOR ALL USING (auth.uid() = user_id);
+
+-- Price alerts: owner only
+CREATE POLICY "price_alerts_all"  ON price_alerts FOR ALL USING (auth.uid() = user_id);
 
 -- ============================================================
 -- AUTO-CREATE PROFILE ON SIGNUP
@@ -86,3 +102,26 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ============================================================
+-- LEADERBOARD VIEW
+-- Ranks users by total portfolio value:
+--   total_value = virtual_balance (cash) + sum(quantity * avg_buy_price)
+-- Note: avg_buy_price is used as a price proxy since live prices
+-- are not stored server-side. The view bypasses RLS (security definer
+-- behavior) so all users' holdings are visible for ranking.
+-- ============================================================
+
+CREATE OR REPLACE VIEW leaderboard_view AS
+SELECT
+  p.id,
+  p.username,
+  p.virtual_balance                                                     AS cash_balance,
+  COALESCE(SUM(h.quantity * h.avg_buy_price), 0)                       AS holdings_value,
+  p.virtual_balance + COALESCE(SUM(h.quantity * h.avg_buy_price), 0)   AS total_value
+FROM profiles p
+LEFT JOIN holdings h ON h.user_id = p.id
+GROUP BY p.id, p.username, p.virtual_balance;
+
+-- Allow any authenticated user to query the leaderboard
+GRANT SELECT ON leaderboard_view TO authenticated;

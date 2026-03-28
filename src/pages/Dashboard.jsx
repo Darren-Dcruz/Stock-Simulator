@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useStockData } from '@/hooks/useStockData'
+import { useMarketData } from '@/lib/MarketDataContext'
 import MostActiveToday from '@/components/MostActiveToday'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,8 +14,8 @@ function fmt(n) {
 
 export default function Dashboard() {
   const { profile, user } = useAuth()
-  const { data: stocks }  = useStockData()
-  const navigate          = useNavigate()
+  const { stocks, allLive } = useMarketData()
+  const navigate            = useNavigate()
   const [holdings, setHoldings] = useState([])
   const [recentTrades, setRecentTrades] = useState([])
 
@@ -27,7 +27,7 @@ export default function Dashboard() {
   }, [user])
 
   const holdingsValue = holdings.reduce((sum, h) => {
-    const live = stocks?.find(s => s.ticker === h.symbol)
+    const live = allLive.find(s => s.ticker === h.symbol)
     return sum + ((live?.price ?? h.avg_buy_price) * h.quantity)
   }, 0)
 
