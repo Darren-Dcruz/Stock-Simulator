@@ -6,10 +6,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-stocksim--academy.vercel.app-orange?style=for-the-badge&logo=vercel)](https://stocksim-academy.vercel.app)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel)](https://vercel.com)
+[![PWA](https://img.shields.io/badge/PWA-Installable-5A0FC8?style=for-the-badge&logo=pwa)](https://stocksim-academy.vercel.app)
 
-*A full-stack stock market simulator with live prices, AI analysis, portfolio tracking, and a real-time leaderboard.*
+*A full-stack stock market simulator with live prices, AI analysis, portfolio benchmarking, fractional shares, price alert emails, and a real-time leaderboard.*
 
 </div>
 
@@ -22,9 +24,11 @@
 |---|---|
 | **Virtual Trading** | Start with $1,000,000 virtual balance — buy & sell with no real risk |
 | **5 Asset Classes** | Stocks · ETFs · Crypto · Forex · Commodities — all in one place |
-| **Live Prices** | Real market data from Finnhub API, refreshing every 2 minutes |
+| **Fractional Shares** | Buy by units (decimals allowed) or toggle to "Buy by Dollar Amount" — e.g. $50 of AAPL |
+| **Live Prices** | Real market data from Finnhub API via secure server-side proxy, refreshing every 2 minutes |
 | **Trade Safety** | Atomic trade execution with automatic rollback on failure |
 | **Portfolio Analytics** | Live P&L per holding, allocation pie chart, weighted avg cost |
+| **Portfolio Benchmarking** | 30-day line chart comparing your return vs S&P 500 (SPY) with a "+X% vs SPY" badge |
 | **Trade History** | Full order log with buy/sell filter |
 
 ### 📊 Market Intelligence
@@ -40,9 +44,10 @@
 ### 🔔 Alerts & Watchlist
 | Feature | Description |
 |---|---|
-| **Price Alerts** | Set above/below target alerts on any instrument — get notified when triggered |
+| **Price Alerts** | Set above/below target alerts on any instrument |
+| **Email Notifications** | Triggered alerts send email via Resend (Vercel Cron, runs daily) |
 | **Watchlist** | Save any asset and monitor live prices in one place |
-| **Auto Alert Checking** | Alerts are evaluated every time live prices refresh (every 2 min) |
+| **Auto Alert Checking** | Alerts evaluated on every live price refresh (every 2 min) |
 
 ### 🤖 AI Market Analyst
 | Feature | Description |
@@ -60,10 +65,12 @@
 ### 🎨 UI & UX
 | Feature | Description |
 |---|---|
+| **Onboarding Modal** | 3-step welcome tour for first-time users — dismissible, restartable from sidebar |
 | **Dark / Light Mode** | System-aware theme toggle |
 | **Real Company Logos** | Actual logos for all stocks, ETFs, and crypto assets |
 | **Loading Skeletons** | Smooth loading states across charts and price displays |
 | **Mobile Friendly** | Responsive sidebar with scroll-to-top on navigation |
+| **PWA — Installable** | Install as a native-like app on desktop or mobile — works offline for cached assets |
 
 ---
 
@@ -71,16 +78,19 @@
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | React 18 + Vite |
+| **Frontend** | React 18 + Vite + **TypeScript (strict)** |
 | **Styling** | Tailwind CSS + shadcn/ui |
 | **Routing** | React Router v6 |
 | **Data Fetching** | TanStack React Query (shared cache, deduped API calls) |
 | **Charts** | Recharts |
 | **Auth & Database** | Supabase (PostgreSQL + Row Level Security) |
-| **Market Data** | Finnhub API — stocks, ETFs, crypto, forex, news |
+| **Market Data** | Finnhub API — proxied via Vercel serverless function (key never exposed to client) |
 | **AI** | Groq API — Llama 3.3 70B (free tier) |
+| **Email** | Resend (transactional alert emails) |
 | **Logo CDN** | Financial Modeling Prep · CoinGecko |
-| **Deployment** | Vercel (SPA + Serverless Functions) |
+| **Testing** | Vitest + @testing-library/react (18 tests) |
+| **PWA** | vite-plugin-pwa + Workbox (cache-first static, network-first API) |
+| **Deployment** | Vercel (SPA + Serverless Functions + Cron Jobs) |
 
 ---
 
@@ -88,11 +98,11 @@
 
 | Class | Exchange | Instruments |
 |---|---|---|
-| **Stocks** | NYSE / NASDAQ | AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA, NFLX, JPM, V, JNJ, WMT + more |
-| **ETFs** | NYSE | SPY, QQQ, DIA, IWM, VTI, GLD, XLF, XLK |
-| **Crypto** | Binance | BTC, ETH, SOL, DOGE, ADA, XRP, BNB |
-| **Forex** | OANDA | EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD |
-| **Commodities** | ETF-based | GLD (Gold), SLV (Silver), USO (Oil), UNG (Gas) |
+| **Stocks** | NYSE / NASDAQ | AAPL, MSFT, GOOGL, AMZN, TSLA, META, NVDA, JPM, V, JNJ + more |
+| **ETFs** | NYSE | SPY, QQQ, TLT, VTI, IVV, AGG |
+| **Crypto** | Binance | BTC, ETH, BNB, SOL, XRP, ADA |
+| **Forex** | OANDA | EUR/USD, GBP/USD, USD/JPY, USD/INR, AUD/USD, USD/CAD |
+| **Commodities** | ETF-based | GLD (Gold), SLV (Silver), USO (Oil), UNG (Gas), WEAT, CORN |
 
 ---
 
@@ -103,7 +113,7 @@ All tables defined in [`supabase/schema.sql`](supabase/schema.sql). Run once in 
 | Table | Purpose |
 |---|---|
 | `profiles` | User accounts with virtual balance (default: $1,000,000) |
-| `holdings` | Current positions per user with quantity & average buy price |
+| `holdings` | Current positions per user with quantity (supports fractional) & average buy price |
 | `trades` | Complete trade history (BUY / SELL) |
 | `watchlists` | Saved assets per user |
 | `price_alerts` | User-defined price alert targets with above/below direction |
@@ -141,16 +151,26 @@ Add the following to `.env.local`:
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Server-side only (never exposed to browser)
 FINNHUB_KEY=your_finnhub_api_key
 GROQ_API_KEY=your_groq_api_key
+
+# Optional — required for email alerts
+SUPABASE_SERVICE_KEY=your_supabase_service_role_key
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=onboarding@resend.dev
 ```
 
 ```bash
 # 4. Set up the database
 # Paste the contents of supabase/schema.sql into the Supabase SQL Editor and run it
 
-# 5. Start the dev server (AI chat works too — no vercel dev needed)
+# 5. Start the dev server (AI chat + Finnhub proxy work locally — no vercel dev needed)
 npm run dev
+
+# 6. Run tests
+npm test
 ```
 
 Open [http://localhost:5173](http://localhost:5173)
@@ -172,9 +192,16 @@ Set these environment variables in **Vercel → Settings → Environment Variabl
 | Variable | Where to get it |
 |---|---|
 | `VITE_SUPABASE_URL` | Supabase → Project Settings → API |
-| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
-| `FINNHUB_KEY` | [finnhub.io](https://finnhub.io) → Free tier (server-side only) |
+| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API (Publishable key) |
+| `FINNHUB_KEY` | [finnhub.io](https://finnhub.io) → Free tier — **server-side only** |
 | `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) → Free tier |
+| `SUPABASE_SERVICE_KEY` | Supabase → Project Settings → API (Secret key) |
+| `RESEND_API_KEY` | [resend.com](https://resend.com) → API Keys |
+| `RESEND_FROM_EMAIL` | Verified sender address (or `onboarding@resend.dev` for testing) |
+
+> **Note:** `FINNHUB_KEY` has no `VITE_` prefix — it is never bundled into the client. All Finnhub requests go through the `/api/finnhub` serverless proxy.
+
+> **Cron:** Price alert emails run once daily at 09:00 UTC (Vercel Hobby plan limit). Upgrade to Pro for `*/5 * * * *` (every 5 min).
 
 ---
 
@@ -182,24 +209,44 @@ Set these environment variables in **Vercel → Settings → Environment Variabl
 
 ```
 src/
-├── api/              # Finnhub data fetching (stockService.js)
-├── components/       # Reusable UI components
-│   ├── AiChatPanel   # Floating AI chat panel
-│   ├── AssetTable    # Market data table
-│   └── ui/           # shadcn/ui primitives
-├── hooks/            # React Query data hooks
+├── api/
+│   └── stockService.ts     # Finnhub data fetching via /api/finnhub proxy
+├── components/
+│   ├── AiChatPanel.tsx     # Floating AI chat panel
+│   ├── OnboardingModal.tsx # 3-step first-time user tour
+│   ├── PwaInstallButton.tsx# PWA install prompt button
+│   ├── AssetLogo.tsx       # Company logo with fallback
+│   └── ui/                 # shadcn/ui primitives
+├── hooks/                  # React Query data hooks
 ├── lib/
-│   ├── alertService  # Price alert CRUD + checking
-│   ├── tradeService  # Atomic trade execution with rollback
-│   ├── MarketDataContext  # Unified live price provider
-│   └── supabase      # Supabase client
-├── pages/            # Route-level page components
-└── Layout.jsx        # App shell with sidebar navigation
+│   ├── alertService.ts     # Price alert CRUD + checking
+│   ├── tradeService.ts     # Atomic trade execution with rollback
+│   ├── MarketDataContext.tsx# Unified live price provider
+│   └── supabase.ts         # Supabase client
+├── pages/                  # Route-level page components
+├── types/
+│   └── index.ts            # Core TypeScript types (Instrument, Quote, Trade…)
+└── Layout.tsx              # App shell with sidebar navigation
 api/
-└── chat.js           # Vercel serverless function → Groq AI
+├── chat.js                 # Vercel serverless function → Groq AI
+├── finnhub.js              # Vercel serverless function → Finnhub proxy (rate-limited)
+└── check-alerts.ts         # Vercel Cron → check price alerts + send emails via Resend
 supabase/
-└── schema.sql        # Full database schema + RLS policies
+└── schema.sql              # Full database schema + RLS policies
 ```
+
+---
+
+## 🧪 Testing
+
+```bash
+npm test
+```
+
+- **18 tests** across 3 test files
+- `tradeService.test.ts` — input validation, balance checks, rollback logic
+- `alertService.test.ts` — direction logic (above/below), DB-connected path
+- `Portfolio.test.tsx` — integration test: render, balance display, empty state
 
 ---
 
