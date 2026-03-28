@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 const SYSTEM_PROMPT = `You are an AI Market Analyst for StockSim Academy, a virtual stock trading simulator designed for students learning to invest.
 
@@ -20,7 +20,7 @@ Available instruments in the simulator:
 - Commodities: Gold, Silver, Oil (WTI), Natural Gas
 
 Remember: All trading in StockSim Academy uses virtual money for educational purposes.
-Be concise, educational, and actionable. Use plain language and avoid jargon unless explaining it.`
+Be concise, educational, and actionable. Use plain language.`
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -33,17 +33,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await client.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages,
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: SYSTEM_PROMPT,
     })
 
-    const text = response.content.find(b => b.type === 'text')?.text ?? ''
+    // Gemini uses 'user' and 'model' roles (not 'assistant')
+    const history = messages.slice(0, -1).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }))
+
+    const lastMessage = messages[messages.length - 1].content
+
+    const chat = model.startChat({ history })
+    const result = await chat.sendMessage(lastMessage)
+    const text = result.response.text()
+
     res.status(200).json({ message: text })
   } catch (err) {
-    console.error('Claude API error:', err)
+    console.error('Gemini API error:', err)
     res.status(500).json({ error: err.message ?? 'Internal server error' })
   }
 }
