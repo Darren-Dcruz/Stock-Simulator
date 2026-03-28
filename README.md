@@ -141,7 +141,7 @@ Add the following to `.env.local`:
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_FINNHUB_KEY=your_finnhub_api_key
+FINNHUB_KEY=your_finnhub_api_key
 GROQ_API_KEY=your_groq_api_key
 ```
 
@@ -173,7 +173,7 @@ Set these environment variables in **Vercel → Settings → Environment Variabl
 |---|---|
 | `VITE_SUPABASE_URL` | Supabase → Project Settings → API |
 | `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
-| `VITE_FINNHUB_KEY` | [finnhub.io](https://finnhub.io) → Free tier |
+| `FINNHUB_KEY` | [finnhub.io](https://finnhub.io) → Free tier (server-side only) |
 | `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) → Free tier |
 
 ---

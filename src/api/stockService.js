@@ -1,5 +1,4 @@
-const FINNHUB_KEY = import.meta.env.VITE_FINNHUB_KEY ?? '';
-const FINNHUB_BASE = 'https://finnhub.io/api/v1';
+// No API key here — all Finnhub calls go through /api/finnhub (server-side proxy)
 
 // ─── Stocks ─────────────────────────────────────────────────────────────────
 export const TRACKED_STOCKS = [
@@ -152,10 +151,15 @@ export function generateMockCandles(symbol, days) {
   return candles;
 }
 
-export function hasFinnhubKey() { return FINNHUB_KEY.length > 0; }
+export function hasFinnhubKey() { return true; }
 
 async function get(path) {
-  const res = await fetch(`${FINNHUB_BASE}${path}&token=${FINNHUB_KEY}`);
+  // Split "/quote?symbol=AAPL" into endpoint "/quote" and params "symbol=AAPL"
+  const qIdx = path.indexOf('?');
+  const endpoint = qIdx === -1 ? path : path.slice(0, qIdx);
+  const params   = qIdx === -1 ? '' : path.slice(qIdx + 1);
+  const url = `/api/finnhub?path=${encodeURIComponent(endpoint)}${params ? '&' + params : ''}`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`Finnhub ${res.status}`);
   return res.json();
 }

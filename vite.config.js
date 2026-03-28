@@ -24,12 +24,47 @@ The creator of StockSim Academy is Darren Dcruz, a college student passionate ab
 Remember: All trading in StockSim Academy uses virtual money for educational purposes.
 Be concise, educational, and actionable. Use plain language.`
 
-// Vite plugin that serves /api/chat locally so `npm run dev` works with AI chat.
-// In production, Vercel handles /api/chat via api/chat.js instead.
-function devApiPlugin(apiKey) {
+// Vite plugin that serves /api/chat and /api/finnhub locally so `npm run dev` works.
+// In production, Vercel handles these via api/*.js serverless functions instead.
+function devApiPlugin(apiKey, finnhubKey) {
   return {
-    name: 'dev-api-chat',
+    name: 'dev-api',
     configureServer(server) {
+      // ── /api/finnhub proxy ──────────────────────────────────────────────────
+      server.middlewares.use('/api/finnhub', async (req, res) => {
+        if (req.method !== 'GET') {
+          res.writeHead(405, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Method not allowed' }))
+          return
+        }
+        if (!finnhubKey) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'FINNHUB_KEY not set in .env.local' }))
+          return
+        }
+        try {
+          const base   = 'http://localhost'
+          const url    = new URL(req.url, base)
+          const path   = url.searchParams.get('path')
+          if (!path) {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: 'Missing required query param: path' }))
+            return
+          }
+          url.searchParams.delete('path')
+          url.searchParams.set('token', finnhubKey)
+          const finnhubUrl = `https://finnhub.io/api/v1${path}?${url.searchParams.toString()}`
+          const upstream = await fetch(finnhubUrl)
+          const data = await upstream.json()
+          res.writeHead(upstream.status, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify(data))
+        } catch (err) {
+          res.writeHead(502, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: `Upstream error: ${err.message}` }))
+        }
+      })
+
+      // ── /api/chat (Groq) ────────────────────────────────────────────────────
       server.middlewares.use('/api/chat', (req, res) => {
         if (req.method !== 'POST') {
           res.writeHead(405, { 'Content-Type': 'application/json' })
@@ -65,7 +100,7 @@ function devApiPlugin(apiKey) {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
-    plugins: [react(), devApiPlugin(env.GROQ_API_KEY)],
+    plugins: [react(), devApiPlugin(env.GROQ_API_KEY, env.FINNHUB_KEY)],
     resolve: {
       alias: { "@": path.resolve(__dirname, "./src") },
     },
