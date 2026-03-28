@@ -43,7 +43,7 @@ function devApiPlugin(apiKey) {
             const { messages } = JSON.parse(body)
             const genAI = new GoogleGenerativeAI(apiKey)
             const model = genAI.getGenerativeModel({
-              model: 'gemini-1.5-flash',
+              model: 'gemini-2.0-flash',
               systemInstruction: SYSTEM_PROMPT,
             })
             const history = messages.slice(0, -1).map(m => ({
