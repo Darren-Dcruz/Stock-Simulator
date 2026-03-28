@@ -30,7 +30,13 @@ export default function AiChatPanel() {
       if (!res.ok) throw new Error(data.error ?? 'Request failed')
       setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, something went wrong: ${err.message}` }])
+      const msg = err.message ?? ''
+      const friendly = msg.includes('429') || msg.includes('quota') || msg.includes('Too Many Requests')
+        ? 'Rate limit reached. Please wait a moment and try again.'
+        : msg.includes('API_KEY') || msg.includes('not set')
+          ? 'API key not configured. Add GEMINI_API_KEY to your .env.local file.'
+          : 'Something went wrong. Please try again.'
+      setMessages(prev => [...prev, { role: 'assistant', content: friendly }])
     }
     setLoading(false)
   }
