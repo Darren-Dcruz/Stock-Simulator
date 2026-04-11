@@ -49,7 +49,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-white flex">
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 to-orange-400 flex-col justify-center px-16 text-white">
         <div className="flex items-center gap-3 mb-8">
@@ -73,21 +73,21 @@ export default function Login() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-white">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <GraduationCap className="h-7 w-7 text-orange-500" />
-            <span className="text-xl font-bold">StockSim Academy</span>
+            <span className="text-xl font-bold text-gray-900">StockSim Academy</span>
           </div>
 
           {/* Tabs */}
-          <div className="flex rounded-lg border p-1 mb-6">
+          <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-1 mb-6">
             {['signin', 'signup'].map(t => (
               <button
                 key={t}
                 onClick={() => { setTab(t); setError('') }}
                 className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                  tab === t ? 'bg-orange-500 text-white' : 'text-muted-foreground hover:text-foreground'
+                  tab === t ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-900'
                 }`}
               >
                 {t === 'signin' ? 'Sign In' : 'Sign Up'}
@@ -98,17 +98,17 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {tab === 'signup' && (
               <div className="space-y-1.5">
-                <Label>Username</Label>
-                <Input placeholder="tradername" value={username} onChange={e => setUsername(e.target.value)} required />
+                <Label className="text-gray-700">Username</Label>
+                <Input className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-400" placeholder="tradername" value={username} onChange={e => setUsername(e.target.value)} required />
               </div>
             )}
             <div className="space-y-1.5">
-              <Label>Email</Label>
-              <Input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              <Label className="text-gray-700">Email</Label>
+              <Input className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-400" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label>Password</Label>
-              <Input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
+              <Label className="text-gray-700">Password</Label>
+              <Input className="border-gray-300 bg-white text-gray-900 placeholder:text-gray-400" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
             </div>
 
             {error && (
