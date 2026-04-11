@@ -44,10 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return supabase.auth.signInWithPassword({ email, password })
   }
   async function signUp(email: string, password: string, username: string): Promise<AuthResponse> {
-    const result = await supabase.auth.signUp({ email, password } satisfies SignUpWithPasswordCredentials)
-    if (!result.error && result.data.user) {
-      await supabase.from('profiles').update({ username }).eq('id', result.data.user.id)
-    }
+    const result = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username } },
+    } satisfies SignUpWithPasswordCredentials)
     return result
   }
   async function signOut() {

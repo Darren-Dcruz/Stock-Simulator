@@ -93,7 +93,14 @@ CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
   INSERT INTO public.profiles (id, username)
-  VALUES (NEW.id, split_part(NEW.email, '@', 1));
+  VALUES (
+    NEW.id,
+    -- Prefer the username passed via signUp options.data; fall back to email prefix
+    COALESCE(
+      NULLIF(NEW.raw_user_meta_data->>'username', ''),
+      split_part(NEW.email, '@', 1)
+    )
+  );
   RETURN NEW;
 END;
 $$;
