@@ -33,7 +33,17 @@ export default function Login() {
         setTab('signin')
       }
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Something went wrong')
+      const msg = (err as Error).message ?? ''
+      if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many'))
+        setError('Too many attempts. Please wait a few minutes and try again.')
+      else if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('networkerror') || msg.toLowerCase().includes('load failed'))
+        setError('Unable to connect. Check your internet connection and try again.')
+      else if (msg.toLowerCase().includes('invalid login') || msg.toLowerCase().includes('invalid credentials') || msg.toLowerCase().includes('email not confirmed'))
+        setError('Incorrect email or password, or account not yet confirmed.')
+      else if (msg.toLowerCase().includes('user already registered') || msg.toLowerCase().includes('already been registered'))
+        setError('An account with this email already exists. Try signing in instead.')
+      else
+        setError(msg || 'Something went wrong. Please try again.')
     }
     setLoading(false)
   }
